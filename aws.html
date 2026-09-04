@@ -291,7 +291,7 @@ Launch Types:
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #0f1117 !important;
+      background-color: #121212 !important;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     #wrapper {
@@ -839,7 +839,11 @@ Launch Types:
         if (nodeGroup) {
           const nodeId = nodeGroup.getAttribute('data-node');
           if (nodeId) {
-            openSidebarForNode(nodeId);
+            if (activeNodeId === nodeId && modal.classList.contains('open')) {
+              closeSidebar();
+            } else {
+              openSidebarForNode(nodeId);
+            }
             return;
           }
         }
@@ -852,7 +856,7 @@ Launch Types:
           const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
 
           let closestNode = null;
-          let minDist = 150; // max click radius in SVG units
+          let minDist = 85; // accurate radius for circle click detection
           for (const [nId, center] of Object.entries(NODE_CENTERS)) {
             const d = Math.hypot(svgPt.x - center.x, svgPt.y - center.y);
             if (d < minDist) {
@@ -861,10 +865,20 @@ Launch Types:
             }
           }
           if (closestNode) {
-            openSidebarForNode(closestNode);
+            if (activeNodeId === closestNode && modal.classList.contains('open')) {
+              closeSidebar();
+            } else {
+              openSidebarForNode(closestNode);
+            }
+            return;
           }
         } catch (err) {
           // CTM inverse fallback
+        }
+
+        // Clicked on empty space (outside any node) - dismiss sidebar if open
+        if (modal.classList.contains('open')) {
+          closeSidebar();
         }
       });
 
