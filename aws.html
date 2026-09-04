@@ -4,6 +4,286 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AWS Architecture Diagram</title>
+
+  <!-- ================================================================= -->
+  <!-- AWS ARCHITECTURE NODE CONFIGURATION (EASY TO MODIFY HERE)           -->
+  <!-- ================================================================= -->
+  <script>
+/* ==========================================================================
+   AWS ARCHITECTURE DIAGRAM - NODE DESCRIPTIONS & DATA CONFIGURATION
+   You can easily edit titles, summaries, details, and search terms below.
+   ========================================================================== */
+const NODE_DATA = {
+  "container": {
+    title: "Application / Docker Container",
+    category: "Compute & Packaging",
+    badge: "Compute Workload",
+    summary: "Lightweight, standalone execution environment packaging application code, libraries, runtime, and configuration.",
+    details: "Containers encapsulate the microservice application so it runs consistently across local development, staging, and production environments. In this architecture, containers run your core backend API and background tasks.",
+    searchTerms: ["Docker Containers", "Containerization", "Microservices Architecture", "Twelve-Factor App"],
+    architectureRole: "Packaged as a Docker image, pushed to Amazon ECR, and orchestrated across servers using Amazon ECS."
+  },
+
+  "ecr": {
+    title: "Amazon ECR (Elastic Container Registry)",
+    category: "Containers & Registry",
+    badge: "Artifact Storage",
+    summary: "Fully managed, secure container image registry for storing, managing, and deploying Docker images.",
+    details: `ECR provides encrypted storage, image scanning for CVE vulnerabilities, and high availability. It integrates natively with ECS and EKS for automated zero-downtime deployment pipelines.
+
+• Best for: Version controlling application builds and securely passing images to deployment tools.
+• The Catch: It is strictly storage; pushing an image to ECR does nothing until a compute service like ECS pulls and executes it.`,
+    searchTerms: ["Amazon ECR", "Container Registry", "Image Scanning", "Docker Image Versioning", "Lifecycle Policies"],
+    architectureRole: "Receives container builds from CI/CD and acts as the secure source repository from which ECS pulls images."
+  },
+
+  "ecs": {
+    title: "Amazon ECS (Elastic Container Service)",
+    category: "Compute & Orchestration",
+    badge: "Container Orchestrator",
+    summary: "Highly scalable container management and orchestration service that schedules and maintains Docker containers.",
+    details: `If a container crashes or becomes unhealthy, ECS automatically terminates and restarts it to maintain desired task counts.
+
+Launch Types:
+1. EC2 Launch Type: ECS places and manages containers on virtual machine instances that you provision, configure, and maintain.
+2. AWS Fargate (Serverless): AWS completely provisions and manages the underlying servers; you only pay for the exact CPU and memory consumed by each container.`,
+    searchTerms: ["Amazon ECS", "AWS Fargate", "ECS Task Definition", "ECS Service", "Cluster Auto Scaling"],
+    architectureRole: "Executes backend container tasks behind the Application Load Balancer and interacts with RDS, ElastiCache, and SQS."
+  },
+
+  "rds": {
+    title: "Amazon RDS (Relational Database Service)",
+    category: "Databases",
+    badge: "Managed Relational DB",
+    summary: "Managed relational database engine supporting PostgreSQL, MySQL, MariaDB, and Amazon Aurora.",
+    details: "Automates time-consuming administrative tasks such as hardware provisioning, database setup, automated backups, point-in-time recovery, security patching, and multi-AZ failover for high availability.",
+    searchTerms: ["Amazon RDS", "Aurora Serverless", "Multi-AZ Deployment", "Read Replicas", "Database Subnet Groups"],
+    architectureRole: "Stores relational structured application data, queried directly by ECS containers and Lambda backend functions."
+  },
+
+  "sqs": {
+    title: "Amazon SQS (Simple Queue Service)",
+    category: "Application Integration",
+    badge: "Message Queuing",
+    summary: "Fully managed message queuing service enabling decoupling and independent scaling of distributed services.",
+    details: `SQS eliminates complexity associated with managing messaging middleware. It handles asynchronous job buffering with dead-letter queues (DLQs) for fault tolerance.
+
+• Standard Queues: Nearly unlimited throughput with best-effort ordering and at-least-once delivery.
+• FIFO Queues: Guaranteed first-in-first-out ordering and exactly-once processing.`,
+    searchTerms: ["Amazon SQS", "Message Queue", "Dead Letter Queue (DLQ)", "Decoupled Architecture", "SQS Visibility Timeout"],
+    architectureRole: "Buffers background and long-running requests from ECS or API Gateway to be consumed asynchronously by worker Lambda functions."
+  },
+
+  "lambda": {
+    title: "AWS Lambda",
+    category: "Serverless Compute",
+    badge: "Serverless Functions",
+    summary: "Zero-server compute service that runs your application code in response to events and automatically scales to demand.",
+    details: `Lambda executes code only when triggered, charging only for the compute time consumed in milliseconds. In this architecture, Lambda serves two crucial roles:
+1. Event-driven post-processing (e.g. triggered automatically when a user uploads an object to S3).
+2. Asynchronous task execution consuming queued messages from SQS for operations taking 5–15 minutes.`,
+    searchTerms: ["AWS Lambda", "Serverless Architecture", "S3 Event Notifications", "Lambda Concurrency", "Cold Starts"],
+    architectureRole: "Triggered by S3 upload events and SQS queue items to process data and send notification alerts via SES or WebSockets."
+  },
+
+  "ses": {
+    title: "Amazon SES (Simple Email Service)",
+    category: "Customer Engagement",
+    badge: "Email Service",
+    summary: "Cost-effective, high-deliverability email service for sending transactional, operational, and marketing emails.",
+    details: "Provides dedicated IP options, DKIM/SPF reputation tracking, deliverability dashboards, and bounce/complaint handling to ensure communications reach user inboxes reliably.",
+    searchTerms: ["Amazon SES", "Transactional Email", "DKIM / SPF Authentication", "Email Deliverability", "SES SMTP"],
+    architectureRole: "Dispatched by worker Lambdas to send task completion emails, account confirmations, and transactional receipts."
+  },
+
+  "elasticache": {
+    title: "Amazon ElastiCache",
+    category: "In-Memory Database & Caching",
+    badge: "In-Memory Cache",
+    summary: "Ultra-fast, fully managed in-memory data store supporting Redis and Memcached for microsecond response times.",
+    details: "Greatly accelerates read-heavy workloads and reduces database load by caching frequently requested database queries, user session states, rate limits, and real-time leaderboards.",
+    searchTerms: ["Amazon ElastiCache", "Redis Cache", "In-Memory Data Store", "Read-Through Caching", "Session Store"],
+    architectureRole: "Caches hot data for ECS and Lambda to offload repetitive read queries from Amazon RDS."
+  },
+
+  "sns": {
+    title: "Amazon SNS (Simple Notification Service)",
+    category: "Application Integration",
+    badge: "Pub/Sub Messaging",
+    summary: "Fully managed pub/sub messaging service for high-throughput, fan-out event distribution.",
+    details: "Publishers send messages to an SNS topic, and subscribers (Amazon SQS queues, AWS Lambda functions, HTTP endpoints, mobile push, and SMS) automatically receive immediate copies.",
+    searchTerms: ["Amazon SNS", "Pub/Sub Fanout", "Push Notifications", "SNS Topics", "Message Filtering"],
+    architectureRole: "Fans out system events and status changes to multiple consumers, queues, and external webhook notification targets."
+  },
+
+  "elasticache_sns": {
+    title: "In-Memory Cache & Pub/Sub (ElastiCache / SNS)",
+    category: "Performance & Messaging",
+    badge: "Cache & Event Hub",
+    summary: "Combined caching and event distribution cluster managing state speed and real-time event dissemination.",
+    details: "This composite cluster provides both microsecond caching with ElastiCache (Redis) and event fan-out with SNS. In contrast to WebSockets, this pattern allows internal services to broadcast state updates across clusters.",
+    searchTerms: ["ElastiCache Redis", "Amazon SNS", "Event-Driven Caching", "Pub/Sub Fanout"],
+    architectureRole: "Provides caching for database query offloading alongside pub/sub event broadcasting for internal microservices."
+  },
+
+  "cloudfront": {
+    title: "Amazon CloudFront (CDN)",
+    category: "Networking & Content Delivery",
+    badge: "Global Edge Network",
+    summary: "Global Content Delivery Network (CDN) delivering data, videos, APIs, and static assets with low latency and high speed.",
+    details: "CloudFront routes traffic to the nearest global Point of Presence (Edge Location). It securely terminates TLS/SSL at the edge, compresses assets, and caches S3 static content and web applications worldwide.",
+    searchTerms: ["Amazon CloudFront", "Content Delivery Network", "Edge Locations", "Origin Access Control (OAC)", "TTL Caching"],
+    architectureRole: "Distributes static web frontend assets cached from Amazon S3 and proxies dynamic API traffic toward the load balancer."
+  },
+
+  "s3": {
+    title: "Amazon S3 (Simple Storage Service)",
+    category: "Storage",
+    badge: "Object Storage",
+    summary: "Industry-leading object storage designed for 99.999999999% (11 9's) data durability and unlimited scalability.",
+    details: `Stores files, images, documents, backups, and static website assets.
+
+• Pre-Signed URLs: Allows clients to securely upload directly (Pre-Signed POST) or download (Pre-Signed GET) without routing heavy binary payloads through application servers.`,
+    searchTerms: ["Amazon S3", "Pre-Signed URLs", "Bucket Policies", "S3 Lifecycle Management", "Cross-Region Replication"],
+    architectureRole: "Stores user file uploads directly via Pre-Signed URLs and triggers worker Lambdas automatically upon file landing."
+  },
+
+  "cloudwatch": {
+    title: "Amazon CloudWatch",
+    category: "Management & Governance",
+    badge: "Monitoring & Telemetry",
+    summary: "Centralized observability, logging, metrics collection, and alerting service for AWS resources and cloud workloads.",
+    details: "Aggregates logs from ECS containers, Lambda runs, API Gateway, and RDS. Generates alarms based on metric thresholds (CPU, memory, HTTP 5xx errors) and triggers auto-scaling or incident notifications.",
+    searchTerms: ["Amazon CloudWatch", "CloudWatch Logs Insights", "CloudWatch Alarms", "Metric Filters", "Observability"],
+    architectureRole: "Monitors health metrics across all infrastructure and collects container & serverless logs for debugging and auditing."
+  },
+
+  "route53": {
+    title: "Amazon Route 53",
+    category: "Networking & DNS",
+    badge: "Authoritative DNS",
+    summary: "Highly available and scalable cloud Domain Name System (DNS) web service running on a global anycast network.",
+    details: "Translates human-readable names (e.g., example.com) into numeric IP addresses. Provides health checks, latency-based routing, geo-DNS routing, and alias records to CloudFront and Application Load Balancers.",
+    searchTerms: ["Amazon Route 53", "DNS Hosted Zones", "Alias Records", "Health Checks & Failover", "Anycast Routing"],
+    architectureRole: "Top-level DNS resolving user domain queries and pointing directly to CloudFront or external CDN edge distributions."
+  },
+
+  "acm": {
+    title: "AWS Certificate Manager (ACM)",
+    category: "Security & Compliance",
+    badge: "SSL/TLS Certificates",
+    summary: "Service that provisions, manages, and automatically renews public and private SSL/TLS certificates.",
+    details: "Provides free public TLS certificates for use with AWS services like CloudFront, API Gateway, and Application Load Balancers, with zero-touch automatic DNS validation and renewals.",
+    searchTerms: ["AWS Certificate Manager", "SSL/TLS Certificates", "Automated Renewal", "DNS Validation", "HTTPS Encryption"],
+    architectureRole: "Secures all inbound HTTPS connections by binding validated TLS certificates to CloudFront and Application Load Balancers."
+  },
+
+  "elb": {
+    title: "AWS Elastic Load Balancing (ELB)",
+    category: "Networking & Load Balancing",
+    badge: "Traffic Balancer",
+    summary: "Automatically distributes incoming application traffic across multiple targets and Availability Zones.",
+    details: "Ensures high fault tolerance by continuously health-checking backend instances/containers and routing requests only to healthy targets.",
+    searchTerms: ["Elastic Load Balancing", "High Availability", "Health Checks", "Multi-AZ Routing"],
+    architectureRole: "Distributes incoming traffic across backend container clusters running in multiple Availability Zones."
+  },
+
+  "alb": {
+    title: "Application Load Balancer (ALB)",
+    category: "Networking & Load Balancing",
+    badge: "Layer 7 Load Balancer",
+    summary: "Feature-rich Layer 7 load balancer routing HTTP/HTTPS traffic based on advanced request content attributes.",
+    details: "Supports path-based routing (/api/* vs /static/*), host-based routing, WebSocket protocol routing, TLS termination, and direct integration with Amazon ECS container dynamic port mappings.",
+    searchTerms: ["Application Load Balancer", "Path-Based Routing", "Target Groups", "Dynamic Port Mapping", "Sticky Sessions"],
+    architectureRole: "Receives decrypted traffic from CloudFront/ACM and routes REST API requests to healthy ECS container tasks."
+  },
+
+  "elb_alb": {
+    title: "Elastic Load Balancing (ELB / ALB)",
+    category: "Networking & Load Balancing",
+    badge: "Load Balancer Cluster",
+    summary: "Scalable traffic ingress balancing Layer 7 requests across redundant container instances and microservices.",
+    details: "Combines Application Load Balancers with target groups to handle health checking, TLS termination, and traffic distribution to backend ECS containers across multiple availability zones.",
+    searchTerms: ["ALB", "Elastic Load Balancing", "Target Groups", "Zero-Downtime Deployments"],
+    architectureRole: "Acts as the single entry point for API traffic reaching the backend container infrastructure."
+  },
+
+  "iam": {
+    title: "AWS IAM (Identity and Access Management)",
+    category: "Security & Compliance",
+    badge: "Access Control & Roles",
+    summary: "Fine-grained permission management controlling authentication and authorization for users, services, and workloads.",
+    details: "Enforces the principle of least privilege. Uses IAM Roles with temporary credentials for ECS tasks and Lambda functions, avoiding hard-coded AWS access keys in source code.",
+    searchTerms: ["AWS IAM", "IAM Roles for Tasks", "Least Privilege Principle", "IAM Policies", "Temporary Credentials"],
+    architectureRole: "Grants granular permissions allowing ECS containers and Lambda functions to securely access S3, RDS, SQS, and CloudWatch."
+  },
+
+  "parameter_store": {
+    title: "AWS Systems Manager Parameter Store",
+    category: "Management & Governance",
+    badge: "Configuration & Secrets",
+    summary: "Secure, hierarchical storage for configuration data management and password/secret storage.",
+    details: "Stores environment variables, API tokens, database connection strings, and license keys. Encrypted with AWS KMS and integrated directly into ECS task definition environment injection.",
+    searchTerms: ["SSM Parameter Store", "AWS KMS Encryption", "Configuration Management", "Secrets Management"],
+    architectureRole: "Supplies encrypted database passwords and API configuration keys to containers and Lambda workers on boot."
+  },
+
+  "opensearch": {
+    title: "Amazon OpenSearch Service",
+    category: "Analytics & Search",
+    badge: "Search & Analytics Engine",
+    summary: "Managed search and analytics engine derived from Elasticsearch for full-text search, filtering, and log analytics.",
+    details: "Enables sub-second search queries across millions of records with autocomplete, fuzzy matching, faceted filtering, geospatial queries, and vector similarity search.",
+    searchTerms: ["Amazon OpenSearch", "Elasticsearch", "Full-Text Search", "Log Analytics", "Vector Search"],
+    architectureRole: "Powers high-speed application search queries and real-time log exploration alongside the primary relational database."
+  },
+
+  "api_gateway": {
+    title: "Amazon API Gateway (V2 WebSocket / HTTP)",
+    category: "Networking & APIs",
+    badge: "Managed API Entryway",
+    summary: "Fully managed API hosting service supporting real-time two-way WebSocket connections and HTTP APIs.",
+    details: `Maintains persistent, stateful WebSocket connections with client devices. When long-running tasks finish, backend workers broadcast immediate notifications back to users without requiring client polling.
+
+• Cheaper & simpler than traditional custom-built WebSocket clusters running on continuous EC2 instances.`,
+    searchTerms: ["Amazon API Gateway", "WebSocket API", "Two-Way Streaming", "HTTP APIs", "Connection Management"],
+    architectureRole: "Maintains active WebSocket links with clients to push notifications when asynchronous tasks (5\u201315 min) finish."
+  },
+
+  "cloudflare": {
+    title: "Cloudflare",
+    category: "Edge & Security",
+    badge: "External Edge Proxy",
+    summary: "Global CDN, DNS, and DDoS protection layer positioned at the Internet perimeter before AWS origins.",
+    details: "Provides edge caching, Web Application Firewall (WAF) rule sets, bot management, and SSL termination before routing legitimate traffic to AWS CloudFront or Route 53.",
+    searchTerms: ["Cloudflare", "Edge Computing", "WAF (Web Application Firewall)", "DDoS Mitigation", "Edge DNS"],
+    architectureRole: "Acts as the outermost internet security shield and DNS proxy guarding the architecture against malicious traffic."
+  },
+
+  "user": {
+    title: "End User / Web Client",
+    category: "Actors & Clients",
+    badge: "Client Application",
+    summary: "End-user web browser or mobile client initiating HTTP requests, WebSocket streams, and file transfers.",
+    details: "Clients fetch the static UI from CloudFront, connect to API Gateway via WebSockets for real-time progress updates, and upload files directly to Amazon S3 via Pre-Signed POST URLs without loading application servers.",
+    searchTerms: ["Client-Side Architecture", "Pre-Signed POST Upload", "WebSocket Client", "Single Page App (SPA)"],
+    architectureRole: "Interacts with CloudFront for assets, API Gateway for live WebSocket alerts, and S3 for direct file uploads."
+  },
+
+  "admin": {
+    title: "Administrator Client",
+    category: "Actors & Clients",
+    badge: "Privileged User",
+    summary: "System administrator or staff member accessing administrative panels, metrics dashboards, and configuration tools.",
+    details: "Admins access operational views, monitor CloudWatch metrics, inspect OpenSearch analytics, and manage application configurations stored in Parameter Store.",
+    searchTerms: ["Admin Console", "RBAC (Role-Based Access Control)", "Internal Tools", "Operational Dashboards"],
+    architectureRole: "Consumes administrative APIs and observability dashboards to monitor system health and perform operational duties."
+  },
+
+};
+  </script>
+
+
   <style>
     html, body, #wrapper {
       margin: 0;
@@ -11,12 +291,14 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #121212 !important;
+      background-color: #0f1117 !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     #wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
     svg {
       width: 100%;
@@ -26,6 +308,223 @@
     }
     svg:active {
       cursor: grabbing;
+    }
+
+    /* Node Hover and Interactive Styling */
+    g.diagram-node {
+      cursor: pointer;
+      transition: filter 0.18s ease-in-out, opacity 0.18s ease;
+    }
+    g.diagram-node:hover {
+      filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.85)) brightness(1.15);
+    }
+    g.diagram-node.active-node {
+      filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.95)) brightness(1.25);
+    }
+
+    /* Floating Tall Sidebar on the Right */
+    #info-modal {
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 16px;
+      bottom: 16px;
+      right: 16px;
+      width: 420px;
+      max-width: calc(100vw - 32px);
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      color: #f3f4f6;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      z-index: 10000;
+      transform: translateX(130%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    }
+    #info-modal.open {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #info-modal-header {
+      padding: 22px 24px 18px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    #info-modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #9ca3af;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+    #info-modal-close:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      transform: scale(1.08);
+    }
+    #info-modal-title {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+    .category-text {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    /* Scrollable Content Body */
+    #info-modal-content {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    #info-modal-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    #info-modal-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #info-modal-content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+    }
+    #info-modal-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    .section-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #38bdf8;
+      margin-bottom: 8px;
+    }
+    .summary-text {
+      margin: 0 0 10px 0;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #f1f5f9;
+      font-weight: 500;
+    }
+    .details-text {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #cbd5e1;
+      white-space: pre-line;
+    }
+    .role-text {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .search-tag {
+      font-size: 11px;
+      background: rgba(56, 189, 248, 0.1);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-family: monospace;
+    }
+    .custom-note-placeholder {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(148, 163, 184, 0.06);
+      border: 1px dashed rgba(148, 163, 184, 0.2);
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.45;
+      margin-top: 4px;
+    }
+    .note-icon {
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    /* Floating Hint at Bottom */
+    #canvas-hint {
+      position: fixed;
+      bottom: 20px;
+      left: 24px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 30px;
+      padding: 8px 16px;
+      font-size: 12px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      z-index: 100;
+    }
+    .hint-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
     }
   </style>
 </head>
@@ -63,6 +562,310 @@
 
       window.addEventListener("mouseup", () => {
         isPanning = false;
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!isPanning) return;
+        pointX = e.clientX - start.x;
+        pointY = e.clientY - start.y;
+        update();
+      });
+
+      wrapper.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        const xs = (e.clientX - pointX) / scale;
+        const ys = (e.clientY - pointY) / scale;
+        const factor = e.deltaY < 0 ? 1.15 : 0.85;
+        const nextScale = Math.min(Math.max(0.1, scale * factor), 15);
+
+        pointX = e.clientX - xs * nextScale;
+        pointY = e.clientY - ys * nextScale;
+        scale = nextScale;
+        update();
+      }, { passive: false });
+
+      update();
+    })();
+  </script>
+
+  <div id="canvas-hint">
+    <span class="hint-dot"></span>
+    <span>Click any node circle to inspect AWS architecture details</span>
+  </div>
+
+  <aside id="info-modal" aria-hidden="true">
+    <div id="info-modal-header">
+      <div class="header-top">
+        <span id="info-modal-badge" class="badge">AWS Service</span>
+        <button id="info-modal-close" aria-label="Close sidebar" title="Close (Esc)">&times;</button>
+      </div>
+      <h2 id="info-modal-title">Service Name</h2>
+      <div id="info-modal-category" class="category-text">Category</div>
+    </div>
+    <div id="info-modal-content">
+      <div class="section-card">
+        <div class="section-title">Overview</div>
+        <p id="info-modal-summary" class="summary-text"></p>
+        <p id="info-modal-details" class="details-text"></p>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">Role in Architecture</div>
+        <p id="info-modal-role" class="role-text"></p>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">Search Terms & Key Concepts</div>
+        <div id="info-modal-tags" class="tags-container"></div>
+      </div>
+
+      <div class="custom-note-placeholder">
+        <span class="note-icon">💡</span>
+        <span>Placeholder AWS explanation. You can replace or customize descriptions for each node later.</span>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    (function() {
+      // NODE_DATA is defined at the top of the file in <head>
+      const ELEMENT_NODES = ["container", "container", "container", "container", "container", "container", "container", "container", "container", "container", "ecr", "s3", "cloudfront", "api_gateway", "api_gateway", "route53", "ses", "cloudflare", "cloudflare", "user", "user", "admin", "admin", "user", "user", "user", "user", "sqs", "ecr", "ecr", "ecr", "ecr", "", "ecs", "ecs", "ecs", "ecs", "ecs", "", "ecr", "ecs", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "opensearch", "", "", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "", "lambda", "lambda", "lambda", "lambda", "lambda", "lambda", "lambda", "lambda", "lambda", "lambda", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "", "", "", "", "user", "", "", "elasticache_sns", "elasticache_sns", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "", "", "api_gateway", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "", "", "cloudfront", "s3", "s3", "s3", "s3", "s3", "s3", "", "", "", "s3", "s3", "", "lambda", "", "cloudwatch", "cloudwatch", "cloudwatch", "cloudwatch", "cloudwatch", "cloudwatch", "cloudwatch", "", "route53", "route53", "route53", "route53", "route53", "route53", "route53", "route53", "route53", "", "", "acm", "acm", "acm", "acm", "acm", "acm", "acm", "acm", "acm", "acm", "acm", "", "elb_alb", "elb", "elb", "elb", "elb", "elb", "elb", "elb", "elb", "elb", "alb", "alb", "alb", "alb", "alb", "alb", "alb", "alb", "alb", "alb", "alb", "", "", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "", "", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "", "", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "", "", ""];
+      const NODE_CENTERS = {
+      "container": {
+            "x": 628.2,
+            "y": 1442.5
+      },
+      "ecr": {
+            "x": 920.3,
+            "y": 1356.6
+      },
+      "s3": {
+            "x": 545.0,
+            "y": 893.1
+      },
+      "cloudfront": {
+            "x": 643.3,
+            "y": 1215.7
+      },
+      "api_gateway": {
+            "x": 1734.1,
+            "y": 1429.2
+      },
+      "route53": {
+            "x": 328.7,
+            "y": 504.7
+      },
+      "ses": {
+            "x": 1680.4,
+            "y": 904.3
+      },
+      "cloudflare": {
+            "x": 307.9,
+            "y": 70.8
+      },
+      "user": {
+            "x": 1248.1,
+            "y": 1261.1
+      },
+      "admin": {
+            "x": 2020.3,
+            "y": 374.2
+      },
+      "sqs": {
+            "x": 1591.3,
+            "y": 1187.0
+      },
+      "ecs": {
+            "x": 1166.2,
+            "y": 1207.1
+      },
+      "rds": {
+            "x": 1651.0,
+            "y": 650.3
+      },
+      "opensearch": {
+            "x": 1446.0,
+            "y": 586.7
+      },
+      "lambda": {
+            "x": 1759.0,
+            "y": 889.3
+      },
+      "elasticache_sns": {
+            "x": 1112.9,
+            "y": 636.2
+      },
+      "elasticache": {
+            "x": 1093.0,
+            "y": 680.9
+      },
+      "sns": {
+            "x": 1208.3,
+            "y": 680.6
+      },
+      "cloudwatch": {
+            "x": 1870.4,
+            "y": 579.7
+      },
+      "acm": {
+            "x": 677.8,
+            "y": 404.6
+      },
+      "elb_alb": {
+            "x": 796.8,
+            "y": 581.2
+      },
+      "elb": {
+            "x": 843.8,
+            "y": 633.6
+      },
+      "alb": {
+            "x": 924.2,
+            "y": 678.8
+      },
+      "iam": {
+            "x": 1356.1,
+            "y": 386.1
+      },
+      "parameter_store": {
+            "x": 1518.2,
+            "y": 1360.4
+      }
+};
+
+      const wrapper = document.getElementById("wrapper");
+      const svg = wrapper ? wrapper.querySelector("svg") : null;
+      if (!svg || !wrapper) return;
+
+      const modal = document.getElementById('info-modal');
+      const titleEl = document.getElementById('info-modal-title');
+      const badgeEl = document.getElementById('info-modal-badge');
+      const categoryEl = document.getElementById('info-modal-category');
+      const summaryEl = document.getElementById('info-modal-summary');
+      const detailsEl = document.getElementById('info-modal-details');
+      const roleEl = document.getElementById('info-modal-role');
+      const tagsEl = document.getElementById('info-modal-tags');
+      const closeBtn = document.getElementById('info-modal-close');
+
+      // Tag SVG elements with data-node and diagram-node class
+      const topGroups = Array.from(svg.children).filter(c => c.tagName.toLowerCase() === 'g');
+      topGroups.forEach((g, i) => {
+        const node = ELEMENT_NODES[i];
+        if (node) {
+          g.setAttribute("data-node", node);
+          g.classList.add("diagram-node");
+        }
+      });
+
+      // Prevent wheel zooming & drag panning inside modal
+      modal.addEventListener('wheel', (e) => { e.stopPropagation(); });
+      modal.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+
+      let activeNodeId = null;
+
+      function openSidebarForNode(nodeId) {
+        const data = NODE_DATA[nodeId];
+        if (!data) return;
+
+        activeNodeId = nodeId;
+        titleEl.textContent = data.title;
+        badgeEl.textContent = data.badge || "AWS Service";
+        categoryEl.textContent = data.category || "Architecture Component";
+        summaryEl.textContent = data.summary || "";
+        detailsEl.textContent = data.details || "";
+        roleEl.textContent = data.architectureRole || "";
+
+        tagsEl.innerHTML = "";
+        (data.searchTerms || []).forEach(term => {
+          const span = document.createElement("span");
+          span.className = "search-tag";
+          span.textContent = term;
+          tagsEl.appendChild(span);
+        });
+
+        // Highlight active node in SVG
+        document.querySelectorAll('g.diagram-node.active-node').forEach(el => el.classList.remove('active-node'));
+        document.querySelectorAll(`g[data-node="${nodeId}"]`).forEach(el => el.classList.add('active-node'));
+
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeSidebar() {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        activeNodeId = null;
+        document.querySelectorAll('g.diagram-node.active-node').forEach(el => el.classList.remove('active-node'));
+      }
+
+      closeBtn.addEventListener('click', closeSidebar);
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('open')) {
+          closeSidebar();
+        }
+      });
+
+      // Pan & Zoom Engine with Click Disambiguation
+      let scale = 1;
+      let pointX = 0;
+      let pointY = 0;
+      let start = { x: 0, y: 0 };
+      let mouseDownPos = { x: 0, y: 0 };
+      let isPanning = false;
+
+      function update() {
+        svg.style.transformOrigin = "0 0";
+        svg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+      }
+
+      wrapper.addEventListener("mousedown", (e) => {
+        if (modal.contains(e.target)) return;
+        start = { x: e.clientX - pointX, y: e.clientY - pointY };
+        mouseDownPos = { x: e.clientX, y: e.clientY };
+        isPanning = true;
+      });
+
+      window.addEventListener("mouseup", (e) => {
+        if (!isPanning) return;
+        isPanning = false;
+
+        const dist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
+        // If user dragged more than 6 pixels, treat as pan, not click
+        if (dist > 6) return;
+
+        // Check if click was on or inside a diagram node
+        const nodeGroup = e.target.closest('[data-node]');
+        if (nodeGroup) {
+          const nodeId = nodeGroup.getAttribute('data-node');
+          if (nodeId) {
+            openSidebarForNode(nodeId);
+            return;
+          }
+        }
+
+        // Fallback: Check coordinates in SVG space
+        try {
+          const pt = svg.createSVGPoint();
+          pt.x = e.clientX;
+          pt.y = e.clientY;
+          const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+          let closestNode = null;
+          let minDist = 150; // max click radius in SVG units
+          for (const [nId, center] of Object.entries(NODE_CENTERS)) {
+            const d = Math.hypot(svgPt.x - center.x, svgPt.y - center.y);
+            if (d < minDist) {
+              minDist = d;
+              closestNode = nId;
+            }
+          }
+          if (closestNode) {
+            openSidebarForNode(closestNode);
+          }
+        } catch (err) {
+          // CTM inverse fallback
+        }
       });
 
       window.addEventListener("mousemove", (e) => {
