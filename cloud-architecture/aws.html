@@ -649,108 +649,33 @@ Launch Types:
     (function() {
       // NODE_DATA is defined at the top of the file in <head>
       const ELEMENT_NODES = ["container", "container", "container", "container", "container", "container", "container", "container", "container", "container", "ecr", "s3", "cloudfront", "api_gateway", "api_gateway", "route53", "ses", "cloudflare", "cloudflare", "user", "user", "admin", "admin", "user", "user", "user", "user", "sqs", "ecr", "ecr", "ecr", "ecr", "", "ecs", "ecs", "ecs", "ecs", "ecs", "", "ecr", "ecs", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "rds", "opensearch", "", "", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "sqs", "", "lambda", "lambda", "lambda", "lambda", "lambda", "lambda", "lambda", "lambda", "lambda", "lambda", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "ses", "", "", "", "", "user", "", "", "elasticache_sns", "elasticache_sns", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "elasticache", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "sns", "", "", "api_gateway", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "cloudfront", "", "", "cloudfront", "s3", "s3", "s3", "s3", "s3", "s3", "", "", "", "s3", "s3", "", "lambda", "", "cloudwatch", "cloudwatch", "cloudwatch", "cloudwatch", "cloudwatch", "cloudwatch", "cloudwatch", "", "route53", "route53", "route53", "route53", "route53", "route53", "route53", "route53", "route53", "", "", "acm", "acm", "acm", "acm", "acm", "acm", "acm", "acm", "acm", "acm", "acm", "", "elb_alb", "elb", "elb", "elb", "elb", "elb", "elb", "elb", "elb", "elb", "alb", "alb", "alb", "alb", "alb", "alb", "alb", "alb", "alb", "alb", "alb", "", "", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "iam", "", "", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "parameter_store", "", "", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "opensearch", "", "", ""];
-      const NODE_CENTERS = {
-      "container": {
-            "x": 628.2,
-            "y": 1442.5
-      },
-      "ecr": {
-            "x": 920.3,
-            "y": 1356.6
-      },
-      "s3": {
-            "x": 545.0,
-            "y": 893.1
-      },
-      "cloudfront": {
-            "x": 643.3,
-            "y": 1215.7
-      },
-      "api_gateway": {
-            "x": 1734.1,
-            "y": 1429.2
-      },
-      "route53": {
-            "x": 328.7,
-            "y": 504.7
-      },
-      "ses": {
-            "x": 1680.4,
-            "y": 904.3
-      },
-      "cloudflare": {
-            "x": 307.9,
-            "y": 70.8
-      },
-      "user": {
-            "x": 1248.1,
-            "y": 1261.1
-      },
-      "admin": {
-            "x": 2020.3,
-            "y": 374.2
-      },
-      "sqs": {
-            "x": 1591.3,
-            "y": 1187.0
-      },
-      "ecs": {
-            "x": 1166.2,
-            "y": 1207.1
-      },
-      "rds": {
-            "x": 1651.0,
-            "y": 650.3
-      },
-      "opensearch": {
-            "x": 1446.0,
-            "y": 586.7
-      },
-      "lambda": {
-            "x": 1759.0,
-            "y": 889.3
-      },
-      "elasticache_sns": {
-            "x": 1112.9,
-            "y": 636.2
-      },
-      "elasticache": {
-            "x": 1093.0,
-            "y": 680.9
-      },
-      "sns": {
-            "x": 1208.3,
-            "y": 680.6
-      },
-      "cloudwatch": {
-            "x": 1870.4,
-            "y": 579.7
-      },
-      "acm": {
-            "x": 677.8,
-            "y": 404.6
-      },
-      "elb_alb": {
-            "x": 796.8,
-            "y": 581.2
-      },
-      "elb": {
-            "x": 843.8,
-            "y": 633.6
-      },
-      "alb": {
-            "x": 924.2,
-            "y": 678.8
-      },
-      "iam": {
-            "x": 1356.1,
-            "y": 386.1
-      },
-      "parameter_store": {
-            "x": 1518.2,
-            "y": 1360.4
-      }
-};
+      const NODE_CIRCLES = {
+        "container": { "x": 673.6, "y": 1468.6, "r": 64.0 },
+        "ecr": { "x": 960.2, "y": 1356.8, "r": 64.0 },
+        "s3": { "x": 628.0, "y": 873.4, "r": 85.9 },
+        "cloudfront": { "x": 669.1, "y": 1226.2, "r": 64.0 },
+        "api_gateway": { "x": 1743.1, "y": 1466.7, "r": 64.1 },
+        "route53": { "x": 377.7, "y": 536.9, "r": 90.7 },
+        "ses": { "x": 1700.5, "y": 914.4, "r": 64.0 },
+        "cloudflare": { "x": 423.1, "y": 154.0, "r": 144.0 },
+        "user": { "x": 1940.2, "y": 788.5, "r": 56.5 },
+        "admin": { "x": 2061.3, "y": 408.7, "r": 56.5 },
+        "sqs": { "x": 1615.5, "y": 1205.0, "r": 64.0 },
+        "ecs": { "x": 1210.9, "y": 1211.3, "r": 64.0 },
+        "rds": { "x": 1676.2, "y": 670.9, "r": 50.9 },
+        "opensearch": { "x": 1469.2, "y": 610.0, "r": 50.9 },
+        "lambda": { "x": 1858.4, "y": 1205.1, "r": 64.0 },
+        "elasticache_sns": { "x": 1162.0, "y": 692.3, "r": 89.8 },
+        "elasticache": { "x": 1114.4, "y": 713.1, "r": 36.1 },
+        "sns": { "x": 1212.1, "y": 681.8, "r": 21.9 },
+        "cloudwatch": { "x": 1895.7, "y": 599.9, "r": 64.0 },
+        "acm": { "x": 732.0, "y": 421.3, "r": 93.8 },
+        "elb_alb": { "x": 903.5, "y": 685.4, "r": 106.7 },
+        "elb": { "x": 846.6, "y": 635.4, "r": 18.0 },
+        "alb": { "x": 937.6, "y": 673.9, "r": 41.3 },
+        "iam": { "x": 1388.0, "y": 413.6, "r": 90.7 },
+        "parameter_store": { "x": 1541.1, "y": 1373.7, "r": 64.0 }
+      };
 
       const wrapper = document.getElementById("wrapper");
       const svg = wrapper ? wrapper.querySelector("svg") : null;
@@ -848,47 +773,54 @@ Launch Types:
         isPanning = true;
       });
 
-      function handleCanvasClickAt(clientX, clientY, target) {
-        // Check if click was on or inside a diagram node
-        const nodeGroup = target ? target.closest('[data-node]') : null;
-        if (nodeGroup) {
-          const nodeId = nodeGroup.getAttribute('data-node');
-          if (nodeId) {
-            if (activeNodeId === nodeId && modal.classList.contains('open')) {
-              closeSidebar();
-            } else {
-              openSidebarForNode(nodeId);
-            }
-            return;
-          }
-        }
-
-        // Fallback: Check coordinates in SVG space
+      function getNodeFromSvgCoords(clientX, clientY) {
         try {
           const pt = svg.createSVGPoint();
           pt.x = clientX;
           pt.y = clientY;
           const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
 
-          let closestNode = null;
-          let minDist = 85; // accurate radius for circle click detection
-          for (const [nId, center] of Object.entries(NODE_CENTERS)) {
-            const d = Math.hypot(svgPt.x - center.x, svgPt.y - center.y);
-            if (d < minDist) {
-              minDist = d;
-              closestNode = nId;
+          let matchedNode = null;
+          let smallestR = Infinity;
+          for (const [nId, circle] of Object.entries(NODE_CIRCLES)) {
+            const d = Math.hypot(svgPt.x - circle.x, svgPt.y - circle.y);
+            // Full circle hit-test with 10px comfort margin
+            if (d <= circle.r + 10) {
+              if (circle.r < smallestR) {
+                smallestR = circle.r;
+                matchedNode = nId;
+              }
             }
           }
-          if (closestNode) {
-            if (activeNodeId === closestNode && modal.classList.contains('open')) {
-              closeSidebar();
-            } else {
-              openSidebarForNode(closestNode);
-            }
-            return;
-          }
+          return matchedNode;
         } catch (err) {
-          // CTM inverse fallback
+          return null;
+        }
+      }
+
+      function handleCanvasClickAt(clientX, clientY, target) {
+        // 1. Precise circle geometry hit test
+        const coordNode = getNodeFromSvgCoords(clientX, clientY);
+
+        // 2. DOM target check
+        const nodeGroup = target ? target.closest('[data-node]') : null;
+        const domNode = nodeGroup ? nodeGroup.getAttribute('data-node') : null;
+
+        let nodeId = coordNode || domNode;
+        // Prefer more specific nested node if both match
+        if (coordNode && domNode && coordNode !== domNode) {
+          const rCoord = NODE_CIRCLES[coordNode] ? NODE_CIRCLES[coordNode].r : Infinity;
+          const rDom = NODE_CIRCLES[domNode] ? NODE_CIRCLES[domNode].r : Infinity;
+          nodeId = rCoord < rDom ? coordNode : domNode;
+        }
+
+        if (nodeId && NODE_DATA[nodeId]) {
+          if (activeNodeId === nodeId && modal.classList.contains('open')) {
+            closeSidebar();
+          } else {
+            openSidebarForNode(nodeId);
+          }
+          return;
         }
 
         // Clicked on empty space (outside any node) - dismiss sidebar if open
@@ -928,23 +860,26 @@ Launch Types:
         update();
       }, { passive: false });
 
-      // Touch events for mobile: smooth 1-finger pan, 2-finger pinch-zoom, and responsive tap
+      // Touch events for mobile: smooth 1-finger pan, 2-finger pinch-zoom, and responsive entire-circle tap
       let touchStartDist = 0;
       let initialTouchScale = 1;
       let touchStartPos = { x: 0, y: 0 };
       let touchStartTime = 0;
       let isTouching = false;
+      let isTouchDragging = false;
 
       wrapper.addEventListener("touchstart", (e) => {
         if (modal.contains(e.target)) return;
         if (e.touches.length === 1) {
           isTouching = true;
+          isTouchDragging = false;
           const t = e.touches[0];
-          start = { x: t.clientX - pointX, y: t.clientY - pointY };
           touchStartPos = { x: t.clientX, y: t.clientY };
           touchStartTime = Date.now();
+          start = { x: t.clientX - pointX, y: t.clientY - pointY };
         } else if (e.touches.length === 2) {
           isTouching = true;
+          isTouchDragging = true;
           touchStartDist = Math.hypot(
             e.touches[0].clientX - e.touches[1].clientX,
             e.touches[0].clientY - e.touches[1].clientY
@@ -960,9 +895,17 @@ Launch Types:
         if (!isTouching) return;
         if (e.touches.length === 1) {
           const t = e.touches[0];
-          pointX = t.clientX - start.x;
-          pointY = t.clientY - start.y;
-          update();
+          const dist = Math.hypot(t.clientX - touchStartPos.x, t.clientY - touchStartPos.y);
+          // Only initiate pan when moved beyond touch slop (10px) to prevent accidental panning during tap
+          if (!isTouchDragging && dist > 10) {
+            isTouchDragging = true;
+            start = { x: t.clientX - pointX, y: t.clientY - pointY };
+          }
+          if (isTouchDragging) {
+            pointX = t.clientX - start.x;
+            pointY = t.clientY - start.y;
+            update();
+          }
         } else if (e.touches.length === 2) {
           const currentDist = Math.hypot(
             e.touches[0].clientX - e.touches[1].clientX,
@@ -993,11 +936,13 @@ Launch Types:
           if (change) {
             const dist = Math.hypot(change.clientX - touchStartPos.x, change.clientY - touchStartPos.y);
             const timeElapsed = Date.now() - touchStartTime;
-            if (dist < 10 && timeElapsed < 400) {
-              const target = document.elementFromPoint(change.clientX, change.clientY);
-              handleCanvasClickAt(change.clientX, change.clientY, target);
+            // Recognized as a tap if not dragged, movement under 24px, duration under 600ms
+            if (!isTouchDragging && dist < 24 && timeElapsed < 600) {
+              const target = document.elementFromPoint(touchStartPos.x, touchStartPos.y);
+              handleCanvasClickAt(touchStartPos.x, touchStartPos.y, target);
             }
           }
+          isTouchDragging = false;
         } else if (e.touches.length === 1) {
           const t = e.touches[0];
           start = { x: t.clientX - pointX, y: t.clientY - pointY };
