@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Azure Architecture Diagram</title>
 
   <!-- ================================================================= -->
@@ -528,6 +528,75 @@ When long-running asynchronous tasks (5–15 minutes) complete, backend worker F
       background: #38bdf8;
       box-shadow: 0 0 8px #38bdf8;
     }
+
+    #wrapper {
+      touch-action: none;
+    }
+
+    .sheet-handle-bar {
+      display: none;
+    }
+
+    /* Mobile Bottom Sheet Responsive Layout */
+    @media (max-width: 768px) {
+      .sheet-handle-bar {
+        display: block;
+        width: 44px;
+        height: 5px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.28);
+        margin: -6px auto 14px auto;
+        cursor: grab;
+      }
+
+      /* Mobile Bottom Sheet: Occupies bottom half, scrollable, leaves diagram visible above */
+      #info-modal {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        height: 52vh;
+        max-height: 80vh;
+        border-radius: 22px 22px 0 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.75), 0 -1px 0 rgba(255, 255, 255, 0.12);
+        transform: translateY(115%);
+        touch-action: pan-y;
+        transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      }
+
+      #info-modal.open {
+        transform: translateY(0);
+      }
+
+      #info-modal-header {
+        padding: 16px 20px 14px 20px;
+      }
+
+      #info-modal-title {
+        font-size: 1.15rem;
+      }
+
+      #info-modal-content {
+        padding: 14px 20px 24px 20px;
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+
+      #canvas-hint {
+        top: 14px;
+        bottom: auto;
+        left: 14px;
+        font-size: 11px;
+        padding: 6px 12px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -539,57 +608,6 @@ When long-running asynchronous tasks (5–15 minutes) complete, backend worker F
 
 </div>
 
-  <script>
-    (function () {
-      const wrapper = document.getElementById("wrapper");
-      const elem = wrapper ? wrapper.querySelector("svg") : null;
-      if (!elem || !wrapper) return;
-
-      let scale = 1;
-      let pointX = 0;
-      let pointY = 0;
-      let start = { x: 0, y: 0 };
-      let isPanning = false;
-
-      function update() {
-        elem.style.transformOrigin = "0 0";
-        elem.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
-      }
-
-      wrapper.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        start = { x: e.clientX - pointX, y: e.clientY - pointY };
-        isPanning = true;
-      });
-
-      window.addEventListener("mouseup", () => {
-        isPanning = false;
-      });
-
-      window.addEventListener("mousemove", (e) => {
-        if (!isPanning) return;
-        pointX = e.clientX - start.x;
-        pointY = e.clientY - start.y;
-        update();
-      });
-
-      wrapper.addEventListener("wheel", (e) => {
-        e.preventDefault();
-        const xs = (e.clientX - pointX) / scale;
-        const ys = (e.clientY - pointY) / scale;
-        const factor = e.deltaY < 0 ? 1.15 : 0.85;
-        const nextScale = Math.min(Math.max(0.1, scale * factor), 15);
-
-        pointX = e.clientX - xs * nextScale;
-        pointY = e.clientY - ys * nextScale;
-        scale = nextScale;
-        update();
-      }, { passive: false });
-
-      update();
-    })();
-  </script>
-
   <div id="canvas-hint">
     <span class="hint-dot"></span>
     <span>Click any node circle to inspect Azure architecture details</span>
@@ -597,6 +615,7 @@ When long-running asynchronous tasks (5–15 minutes) complete, backend worker F
 
   <aside id="info-modal" aria-hidden="true">
     <div id="info-modal-header">
+      <div class="sheet-handle-bar"></div>
       <div class="header-top">
         <span id="info-modal-badge" class="badge">Azure Service</span>
         <button id="info-modal-close" aria-label="Close sidebar" title="Close (Esc)">&times;</button>
@@ -762,6 +781,9 @@ When long-running asynchronous tasks (5–15 minutes) complete, backend worker F
       // Prevent wheel zooming & drag panning inside modal
       modal.addEventListener('wheel', (e) => { e.stopPropagation(); });
       modal.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+      modal.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: true });
+      modal.addEventListener('touchmove', (e) => { e.stopPropagation(); }, { passive: true });
+      modal.addEventListener('touchend', (e) => { e.stopPropagation(); }, { passive: true });
 
       let activeNodeId = null;
 
@@ -828,16 +850,9 @@ When long-running asynchronous tasks (5–15 minutes) complete, backend worker F
         isPanning = true;
       });
 
-      window.addEventListener("mouseup", (e) => {
-        if (!isPanning) return;
-        isPanning = false;
-
-        const dist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
-        // If user dragged more than 6 pixels, treat as pan, not click
-        if (dist > 6) return;
-
+      function handleCanvasClickAt(clientX, clientY, target) {
         // Check if click was on or inside a diagram node
-        const nodeGroup = e.target.closest('[data-node]');
+        const nodeGroup = target ? target.closest('[data-node]') : null;
         if (nodeGroup) {
           const nodeId = nodeGroup.getAttribute('data-node');
           if (nodeId) {
@@ -853,8 +868,8 @@ When long-running asynchronous tasks (5–15 minutes) complete, backend worker F
         // Fallback: Check coordinates in SVG space
         try {
           const pt = svg.createSVGPoint();
-          pt.x = e.clientX;
-          pt.y = e.clientY;
+          pt.x = clientX;
+          pt.y = clientY;
           const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
 
           let closestNode = null;
@@ -882,6 +897,17 @@ When long-running asynchronous tasks (5–15 minutes) complete, backend worker F
         if (modal.classList.contains('open')) {
           closeSidebar();
         }
+      }
+
+      window.addEventListener("mouseup", (e) => {
+        if (!isPanning) return;
+        isPanning = false;
+
+        const dist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
+        // If user dragged more than 6 pixels, treat as pan, not click
+        if (dist > 6) return;
+
+        handleCanvasClickAt(e.clientX, e.clientY, e.target);
       });
 
       window.addEventListener("mousemove", (e) => {
@@ -902,6 +928,82 @@ When long-running asynchronous tasks (5–15 minutes) complete, backend worker F
         pointY = e.clientY - ys * nextScale;
         scale = nextScale;
         update();
+      }, { passive: false });
+
+      // Touch events for mobile: smooth 1-finger pan, 2-finger pinch-zoom, and responsive tap
+      let touchStartDist = 0;
+      let initialTouchScale = 1;
+      let touchStartPos = { x: 0, y: 0 };
+      let touchStartTime = 0;
+      let isTouching = false;
+
+      wrapper.addEventListener("touchstart", (e) => {
+        if (modal.contains(e.target)) return;
+        if (e.touches.length === 1) {
+          isTouching = true;
+          const t = e.touches[0];
+          start = { x: t.clientX - pointX, y: t.clientY - pointY };
+          touchStartPos = { x: t.clientX, y: t.clientY };
+          touchStartTime = Date.now();
+        } else if (e.touches.length === 2) {
+          isTouching = true;
+          touchStartDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          initialTouchScale = scale;
+          const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          start = { x: midX - pointX, y: midY - pointY };
+        }
+      }, { passive: false });
+
+      window.addEventListener("touchmove", (e) => {
+        if (!isTouching) return;
+        if (e.touches.length === 1) {
+          const t = e.touches[0];
+          pointX = t.clientX - start.x;
+          pointY = t.clientY - start.y;
+          update();
+        } else if (e.touches.length === 2) {
+          const currentDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          if (touchStartDist > 0) {
+            const factor = currentDist / touchStartDist;
+            const nextScale = Math.min(Math.max(0.1, initialTouchScale * factor), 15);
+            const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            const xs = (midX - pointX) / scale;
+            const ys = (midY - pointY) / scale;
+
+            pointX = midX - xs * nextScale;
+            pointY = midY - ys * nextScale;
+            scale = nextScale;
+            update();
+          }
+        }
+        if (e.cancelable) e.preventDefault();
+      }, { passive: false });
+
+      window.addEventListener("touchend", (e) => {
+        if (!isTouching) return;
+        if (e.touches.length === 0) {
+          isTouching = false;
+          const change = e.changedTouches[0];
+          if (change) {
+            const dist = Math.hypot(change.clientX - touchStartPos.x, change.clientY - touchStartPos.y);
+            const timeElapsed = Date.now() - touchStartTime;
+            if (dist < 10 && timeElapsed < 400) {
+              const target = document.elementFromPoint(change.clientX, change.clientY);
+              handleCanvasClickAt(change.clientX, change.clientY, target);
+            }
+          }
+        } else if (e.touches.length === 1) {
+          const t = e.touches[0];
+          start = { x: t.clientX - pointX, y: t.clientY - pointY };
+        }
       }, { passive: false });
 
       update();
