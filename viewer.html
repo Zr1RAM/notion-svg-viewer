@@ -589,7 +589,122 @@
       transform: rotate(45deg);
     }
 
-    /* Code Blocks */
+    /* Collapsible Code Blocks */
+    .code-block-wrapper {
+      position: relative;
+      background: #090a0f;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin: 18px 0;
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .code-block-wrapper:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .code-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      user-select: none;
+      font-size: 12px;
+      color: var(--text-secondary);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .code-block-header:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+    }
+
+    .code-header-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 600;
+    }
+
+    .code-chevron {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .code-block-wrapper.open .code-chevron {
+      transform: rotate(90deg);
+      color: var(--accent-purple);
+    }
+
+    .code-block-wrapper:not(.open) .code-chevron {
+      transform: rotate(0deg);
+      color: var(--text-muted);
+    }
+
+    .code-lang-label {
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .code-line-count {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .code-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .code-action-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: var(--transition);
+      font-family: inherit;
+    }
+
+    .code-action-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .code-block-body {
+      position: relative;
+    }
+
+    .code-block-wrapper:not(.open) .code-block-body {
+      display: none;
+    }
+
+    .code-block-wrapper:not(.open) .code-block-header {
+      border-bottom: none;
+    }
+
+    /* Pre & Code Element Styling */
     .markdown-body pre {
       position: relative;
       background: #090a0f;
@@ -598,6 +713,14 @@
       padding: 16px 18px;
       margin: 18px 0;
       overflow-x: auto;
+    }
+
+    .code-block-wrapper pre {
+      margin: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      padding: 14px 18px;
     }
 
     .markdown-body pre::-webkit-scrollbar {
@@ -632,31 +755,6 @@
       padding: 0;
       border-radius: 0;
       line-height: 1.6;
-    }
-
-    /* Copy code button */
-    .copy-code-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--border-color);
-      color: var(--text-secondary);
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 11px;
-      cursor: pointer;
-      transition: var(--transition);
-      opacity: 0;
-    }
-
-    pre:hover .copy-code-btn {
-      opacity: 1;
-    }
-
-    .copy-code-btn:hover {
-      background: rgba(255, 255, 255, 0.16);
-      color: #fff;
     }
 
     /* Callout Alerts (GitHub / Obsidian style) */
@@ -918,20 +1016,8 @@
       // Wrap H2 Sections and H3 Questions into interactive collapsible groups
       enhanceCollapsibleHierarchy(container);
 
-      // Add copy buttons to code blocks
-      container.querySelectorAll("pre").forEach(pre => {
-        const btn = document.createElement("button");
-        btn.className = "copy-code-btn";
-        btn.textContent = "Copy";
-        btn.onclick = () => {
-          const code = pre.querySelector("code") ? pre.querySelector("code").innerText : pre.innerText;
-          navigator.clipboard.writeText(code).then(() => {
-            btn.textContent = "Copied!";
-            setTimeout(() => { btn.textContent = "Copy"; }, 2000);
-          });
-        };
-        pre.appendChild(btn);
-      });
+      // Enhance code blocks: make them collapsible with language badges, copy & toggle buttons
+      enhanceCollapsibleCodeBlocks(container);
 
       // Build Table of Contents with nested collapsible sections
       buildTableOfContents(container);
@@ -1044,6 +1130,124 @@
       container.appendChild(fragment);
     }
 
+    // Enhances code blocks into collapsible containers with language badges, copy and toggle buttons
+    function enhanceCollapsibleCodeBlocks(container) {
+      container.querySelectorAll("pre").forEach(pre => {
+        const codeEl = pre.querySelector("code");
+        const codeText = codeEl ? codeEl.innerText : pre.innerText;
+        const lineCount = codeText.trim().split("\n").length;
+
+        // Detect language name
+        let langName = "Code";
+        if (codeEl && codeEl.className) {
+          const match = codeEl.className.match(/language-([a-z0-9_-]+)/i);
+          if (match && match[1]) {
+            const rawLang = match[1].toLowerCase();
+            const langMap = {
+              js: "JavaScript",
+              javascript: "JavaScript",
+              ts: "TypeScript",
+              typescript: "TypeScript",
+              html: "HTML",
+              css: "CSS",
+              json: "JSON",
+              bash: "Bash",
+              sh: "Shell",
+              shell: "Shell",
+              py: "Python",
+              python: "Python",
+              sql: "SQL",
+              yaml: "YAML",
+              yml: "YAML",
+              xml: "XML",
+              java: "Java",
+              cpp: "C++",
+              c: "C",
+              csharp: "C#"
+            };
+            langName = langMap[rawLang] || match[1].toUpperCase();
+          }
+        }
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-block-wrapper open";
+        const thisWrapper = wrapper;
+
+        const header = document.createElement("div");
+        header.className = "code-block-header";
+        header.title = "Click to collapse / expand code block";
+
+        const left = document.createElement("div");
+        left.className = "code-header-left";
+        left.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="code-chevron">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+          <span class="code-lang-label">${langName}</span>
+          <span class="code-line-count">${lineCount} ${lineCount === 1 ? 'line' : 'lines'}</span>
+        `;
+
+        const actions = document.createElement("div");
+        actions.className = "code-header-actions";
+
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "code-action-btn";
+        copyBtn.title = "Copy code to clipboard";
+        copyBtn.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Copy</span>
+        `;
+        copyBtn.onclick = (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(codeText).then(() => {
+            const span = copyBtn.querySelector("span");
+            if (span) span.textContent = "Copied!";
+            setTimeout(() => {
+              if (span) span.textContent = "Copy";
+            }, 2000);
+          });
+        };
+
+        const toggleBtn = document.createElement("button");
+        toggleBtn.className = "code-action-btn btn-toggle-code";
+        toggleBtn.title = "Toggle code visibility";
+        const toggleSpan = document.createElement("span");
+        toggleSpan.textContent = "Collapse";
+        toggleBtn.appendChild(toggleSpan);
+
+        toggleBtn.onclick = (e) => {
+          e.stopPropagation();
+          const isOpen = thisWrapper.classList.toggle("open");
+          toggleSpan.textContent = isOpen ? "Collapse" : "Expand";
+        };
+
+        header.onclick = (e) => {
+          if (e.target.closest("button")) return;
+          const isOpen = thisWrapper.classList.toggle("open");
+          toggleSpan.textContent = isOpen ? "Collapse" : "Expand";
+        };
+
+        actions.appendChild(copyBtn);
+        actions.appendChild(toggleBtn);
+
+        header.appendChild(left);
+        header.appendChild(actions);
+
+        const body = document.createElement("div");
+        body.className = "code-block-body";
+
+        if (pre.parentNode) {
+          pre.parentNode.insertBefore(wrapper, pre);
+          body.appendChild(pre);
+          wrapper.appendChild(header);
+          wrapper.appendChild(body);
+        }
+      });
+    }
+
     // Toggle all sections and questions at once
     let allExpanded = true;
     function toggleAllHeadings() {
@@ -1061,6 +1265,15 @@
         q.classList.toggle("open", allExpanded);
         const h3 = q.querySelector("h3.collapsible-heading");
         if (h3) h3.setAttribute("aria-expanded", allExpanded);
+      });
+
+      // Update all code blocks in document
+      document.querySelectorAll(".code-block-wrapper").forEach(blk => {
+        blk.classList.toggle("open", allExpanded);
+        const toggleSpan = blk.querySelector(".btn-toggle-code span");
+        if (toggleSpan) {
+          toggleSpan.textContent = allExpanded ? "Collapse" : "Expand";
+        }
       });
 
       // Update all TOC section groups
