@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Viewer | Notion Diagrams Hub</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Syntax Highlighting & Markdown Parser -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <style>
+    :root {
+      --bg-primary: #0f1117;
+      --bg-card: #181b22;
+      --bg-subcard: #13161c;
+      --border-color: #272d3b;
+      --border-hover: #3d465c;
+      --text-primary: #f0f3f6;
+      --text-secondary: #949eb2;
+      --text-muted: #5e687e;
+      --accent-green: #00ff88;
+      --accent-glow: rgba(0, 255, 136, 0.15);
+      --accent-blue: #38bdf8;
+      --accent-purple: #a855f7;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --card-radius: 12px;
+      --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(15, 17, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .btn-back:hover {
+      background: var(--bg-subcard);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .breadcrumbs span.current {
+      color: var(--text-primary);
+      font-weight: 600;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .badge-doc {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--accent-purple);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .action-btn:hover {
+      border-color: var(--text-secondary);
+      color: var(--text-primary);
+    }
+
+    /* Main Layout */
+    .viewer-layout {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      gap: 32px;
+    }
+
+    /* Outline / Table of Contents */
+    .toc-sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 80px;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toc-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .toc-item a {
+      display: block;
+      padding: 5px 8px;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      line-height: 1.4;
+      transition: var(--transition);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .toc-item a:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .toc-item.level-2 { padding-left: 0; font-weight: 600; color: var(--text-primary); }
+    .toc-item.level-3 { padding-left: 14px; font-size: 12px; }
+    .toc-item.level-4 { padding-left: 24px; font-size: 12px; }
+
+    @media (max-width: 992px) {
+      .toc-sidebar {
+        display: none;
+      }
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 40px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 640px) {
+      .content-area {
+        padding: 24px 16px;
+      }
+    }
+
+    /* Markdown Styling */
+    .markdown-body {
+      color: var(--text-primary);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .markdown-body h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+      color: #fff;
+    }
+
+    .markdown-body h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 36px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--accent-blue);
+    }
+
+    .markdown-body h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .markdown-body h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      color: var(--accent-green);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .markdown-body p {
+      margin-bottom: 16px;
+    }
+
+    .markdown-body ul, .markdown-body ol {
+      margin-bottom: 16px;
+      padding-left: 24px;
+    }
+
+    .markdown-body li {
+      margin-bottom: 6px;
+    }
+
+    /* Task Lists (Checkboxes) */
+    .markdown-body ul.contains-task-list {
+      list-style: none;
+      padding-left: 4px;
+    }
+
+    .markdown-body li.task-list-item {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-weight: 500;
+    }
+
+    .markdown-body input[type="checkbox"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border-hover);
+      border-radius: 4px;
+      background: var(--bg-subcard);
+      cursor: pointer;
+      position: relative;
+      top: 3px;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+
+    .markdown-body input[type="checkbox"]:checked {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+    }
+
+    .markdown-body input[type="checkbox"]:checked::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 1px;
+      width: 4px;
+      height: 9px;
+      border: solid #0f1117;
+      border-width: 0 2.5px 2.5px 0;
+      transform: rotate(45deg);
+    }
+
+    /* Code Blocks */
+    .markdown-body pre {
+      position: relative;
+      background: #090a0f;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin: 18px 0;
+      overflow-x: auto;
+    }
+
+    .markdown-body code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #e2e8f0;
+    }
+
+    .markdown-body pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      line-height: 1.6;
+    }
+
+    /* Copy code button */
+    .copy-code-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: var(--transition);
+      opacity: 0;
+    }
+
+    pre:hover .copy-code-btn {
+      opacity: 1;
+    }
+
+    .copy-code-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+    }
+
+    /* Callout Alerts (GitHub / Obsidian style) */
+    .alert-callout {
+      border-left: 4px solid var(--accent-blue);
+      background: rgba(56, 189, 248, 0.08);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 20px 0;
+    }
+
+    .alert-callout.note {
+      border-color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .alert-callout.tip {
+      border-color: var(--accent-green);
+      background: rgba(0, 255, 136, 0.08);
+    }
+
+    .alert-callout.important {
+      border-color: var(--accent-purple);
+      background: rgba(168, 85, 247, 0.08);
+    }
+
+    .alert-callout.warning {
+      border-color: var(--accent-amber);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .alert-title {
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .alert-callout.note .alert-title { color: var(--accent-blue); }
+    .alert-callout.tip .alert-title { color: var(--accent-green); }
+    .alert-callout.important .alert-title { color: var(--accent-purple); }
+    .alert-callout.warning .alert-title { color: var(--accent-amber); }
+
+    /* Tables */
+    .markdown-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      overflow-x: auto;
+      display: block;
+    }
+
+    .markdown-body th, .markdown-body td {
+      border: 1px solid var(--border-color);
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    .markdown-body th {
+      background: var(--bg-subcard);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .markdown-body tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .markdown-body blockquote {
+      border-left: 3px solid var(--border-hover);
+      padding-left: 16px;
+      color: var(--text-secondary);
+      margin: 16px 0;
+      font-style: italic;
+    }
+
+    /* Links */
+    .markdown-body a {
+      color: var(--accent-blue);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .markdown-body a:hover {
+      color: var(--accent-green);
+    }
+
+    /* Local File Dropzone / CORS Fallback */
+    .dropzone-overlay {
+      display: none;
+      border: 2px dashed var(--accent-green);
+      background: rgba(0, 255, 136, 0.05);
+      border-radius: var(--card-radius);
+      padding: 40px;
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .status-box {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-secondary);
+    }
+
+    .status-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: var(--accent-green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header>
+    <div class="nav-left">
+      <a href="index.html" class="btn-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Hub
+      </a>
+      <div class="breadcrumbs">
+        <span id="breadcrumb-category">Interview Prep</span>
+        <span>/</span>
+        <span id="breadcrumb-file" class="current">Loading...</span>
+      </div>
+      <span class="badge-doc">Document</span>
+    </div>
+
+    <div class="nav-right">
+      <button class="action-btn" id="btn-copy-raw" onclick="copyDocumentMarkdown()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span id="copy-btn-text">Copy Raw Markdown</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Reader Layout -->
+  <div class="viewer-layout">
+    
+    <!-- Table of Contents Outline -->
+    <aside class="toc-sidebar" id="toc-sidebar">
+      <div class="toc-title">
+        <span>Table of Contents</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+      </div>
+      <ul class="toc-list" id="toc-list">
+        <!-- Generated dynamically -->
+      </ul>
+    </aside>
+
+    <!-- Content Area -->
+    <main class="content-area">
+      <div id="content-container">
+        <div class="status-box">
+          <div class="status-spinner"></div>
+          <p>Fetching and rendering markdown...</p>
+        </div>
+      </div>
+
+      <!-- CORS / file:/// fallback -->
+      <div id="cors-helper" class="dropzone-overlay">
+        <h3 style="color:var(--accent-green); margin-bottom: 8px;">Direct Local File (file:///) Detected</h3>
+        <p style="color:var(--text-secondary); margin-bottom: 16px; font-size: 14px;">
+          Browser security limits direct <code>fetch()</code> on the <code>file:///</code> protocol. Select the file below or serve via local server:
+        </p>
+        <input type="file" id="local-file-picker" accept=".md,.markdown,.txt" style="display:none">
+        <button class="action-btn" style="background:var(--accent-green); color:#0f1117; font-weight:600; padding:8px 18px;" onclick="document.getElementById('local-file-picker').click()">
+          Pick Markdown File to View
+        </button>
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    let rawMarkdownContent = "";
+
+    // Parse query params to find target markdown file
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetFilePath = urlParams.get("file") || "Interview Prep/React & Node/README.md";
+
+    // Set Header Breadcrumbs
+    function updateBreadcrumbs(filePath) {
+      const parts = filePath.replace(/\\/g, "/").split("/");
+      const fileName = parts.pop();
+      const folderName = parts.length > 0 ? parts.join(" / ") : "Documents";
+      
+      document.getElementById("breadcrumb-category").textContent = folderName;
+      document.getElementById("breadcrumb-file").textContent = fileName;
+      document.title = `${fileName} | Notion Diagrams Hub`;
+    }
+
+    updateBreadcrumbs(targetFilePath);
+
+    // Transform GitHub/Obsidian callouts (> [!NOTE], > [!TIP], etc.)
+    function preprocessCallouts(md) {
+      const alertRegex = /^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:\s*([^\n]*))?/gim;
+      return md.replace(alertRegex, (match, type, title) => {
+        const lowerType = type.toLowerCase();
+        const displayTitle = title ? title.trim() : type;
+        return `\n<div class="alert-callout ${lowerType}"><div class="alert-title">${displayTitle}</div>\n`;
+      }).replace(/<\/div>\n\n(?=[^>])/g, '</div>\n');
+    }
+
+    // Configure marked
+    marked.setOptions({
+      gfm: true,
+      breaks: true,
+      highlight: function(code, lang) {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+        return hljs.highlight(code, { language }).value;
+      }
+    });
+
+    // Render markdown content into HTML and build TOC
+    function renderMarkdown(markdownText) {
+      rawMarkdownContent = markdownText;
+      const preprocessed = preprocessCallouts(markdownText);
+      const rawHtml = marked.parse(preprocessed);
+      const cleanHtml = DOMPurify.sanitize(rawHtml, {
+        ADD_TAGS: ['div', 'input', 'button'],
+        ADD_ATTR: ['class', 'type', 'checked', 'onclick', 'id']
+      });
+
+      const container = document.getElementById("content-container");
+      container.className = "markdown-body";
+      container.innerHTML = cleanHtml;
+
+      // Add copy buttons to code blocks
+      container.querySelectorAll("pre").forEach(pre => {
+        const btn = document.createElement("button");
+        btn.className = "copy-code-btn";
+        btn.textContent = "Copy";
+        btn.onclick = () => {
+          const code = pre.querySelector("code") ? pre.querySelector("code").innerText : pre.innerText;
+          navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = "Copied!";
+            setTimeout(() => { btn.textContent = "Copy"; }, 2000);
+          });
+        };
+        pre.appendChild(btn);
+      });
+
+      // Build Table of Contents
+      buildTableOfContents(container);
+    }
+
+    // Generate dynamic Table of Contents
+    function buildTableOfContents(container) {
+      const headings = container.querySelectorAll("h1, h2, h3, h4");
+      const tocList = document.getElementById("toc-list");
+      tocList.innerHTML = "";
+
+      if (headings.length === 0) {
+        document.getElementById("toc-sidebar").style.display = "none";
+        return;
+      }
+
+      headings.forEach((heading, idx) => {
+        const text = heading.textContent.replace(/^#+\s*/, "").trim();
+        const slug = "heading-" + idx + "-" + text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        heading.id = slug;
+
+        const level = parseInt(heading.tagName.charAt(1));
+        if (level > 1 && level <= 3) {
+          const li = document.createElement("li");
+          li.className = `toc-item level-${level}`;
+          
+          const a = document.createElement("a");
+          a.href = `#${slug}`;
+          a.textContent = text;
+          a.title = text;
+
+          li.appendChild(a);
+          tocList.appendChild(li);
+        }
+      });
+    }
+
+    // Fetch markdown file from relative URL or GitHub fallback
+    async function fetchMarkdown() {
+      // 1. If served over HTTP/HTTPS (GitHub Pages or local web server), fetch directly
+      if (window.location.protocol.startsWith("http")) {
+        try {
+          const res = await fetch(targetFilePath);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const text = await res.text();
+          renderMarkdown(text);
+          return;
+        } catch (err) {
+          console.warn("Direct fetch failed, trying GitHub fallback...", err);
+        }
+      }
+
+      // 2. If opened locally via file:/// or if local fetch failed, fetch from GitHub raw CDN
+      const githubRawUrl = `https://raw.githubusercontent.com/Zr1RAM/notion-svg-viewer/main/${targetFilePath}`;
+      try {
+        const ghRes = await fetch(githubRawUrl);
+        if (ghRes.ok) {
+          const ghText = await ghRes.text();
+          renderMarkdown(ghText);
+          return;
+        }
+      } catch (ghErr) {
+        console.warn("GitHub Raw fetch failed:", ghErr);
+      }
+
+      // 3. Fallback UI if offline on file:///
+      if (window.location.protocol === "file:") {
+        document.getElementById("content-container").innerHTML = `
+          <div class="status-box">
+            <h3 style="color:#fff; margin-bottom:8px;">Offline File Access</h3>
+            <p>Could not fetch online version and direct local filesystem reads are blocked by browser security (<code>file:///</code>).</p>
+          </div>
+        `;
+        document.getElementById("cors-helper").style.display = "block";
+      } else {
+        document.getElementById("content-container").innerHTML = `
+          <div class="status-box">
+            <h3 style="color:var(--accent-red); margin-bottom:8px;">Document Not Found</h3>
+            <p>Could not locate <code>${targetFilePath}</code> in the repository.</p>
+            <p style="margin-top:14px;"><a href="index.html" style="color:var(--accent-green);">Return to Diagrams & Docs Hub</a></p>
+          </div>
+        `;
+      }
+    }
+
+    // Support local file picker on file:///
+    document.getElementById("local-file-picker").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          document.getElementById("cors-helper").style.display = "none";
+          updateBreadcrumbs(file.name);
+          renderMarkdown(evt.target.result);
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // Copy raw document text
+    function copyDocumentMarkdown() {
+      if (!rawMarkdownContent) return;
+      navigator.clipboard.writeText(rawMarkdownContent).then(() => {
+        const btnText = document.getElementById("copy-btn-text");
+        btnText.textContent = "Copied to Clipboard!";
+        setTimeout(() => { btnText.textContent = "Copy Raw Markdown"; }, 2000);
+      });
+    }
+
+    // Execute load
+    fetchMarkdown();
+  </script>
+</body>
+</html>

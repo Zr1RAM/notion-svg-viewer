@@ -164,17 +164,25 @@
       color: var(--text-muted);
     }
 
-    /* Folders Grid */
+    /* Folders Masonry Layout (Eliminates rigid row track gaps) */
     .folders-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      display: flex;
       gap: 20px;
       width: 100%;
+      align-items: flex-start;
     }
 
-    @media (max-width: 640px) {
+    .grid-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    @media (max-width: 768px) {
       .folders-grid {
-        grid-template-columns: 1fr;
+        flex-direction: column;
       }
     }
 
@@ -186,6 +194,7 @@
       overflow: hidden;
       transition: var(--transition);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      width: 100%;
     }
 
     .folder-card:hover {
@@ -380,6 +389,201 @@
       height: 16px;
     }
 
+    .diagram-btn.is-markdown:hover {
+      border-color: var(--accent-purple);
+      box-shadow: 0 2px 12px rgba(168, 85, 247, 0.2);
+    }
+
+    .diagram-btn.is-markdown .diagram-btn-icon {
+      background: rgba(168, 85, 247, 0.12);
+      color: var(--accent-purple);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    .diagram-btn.is-markdown:hover .diagram-btn-icon {
+      background: rgba(168, 85, 247, 0.25);
+      color: #d8b4fe;
+    }
+
+    .diagram-btn.is-markdown:hover .diagram-btn-arrow {
+      color: var(--accent-purple);
+    }
+
+    .item-type-pill {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .pill-html {
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .pill-md {
+      background: rgba(168, 85, 247, 0.12);
+      color: var(--accent-purple);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    /* Nested Subfolder Accordion */
+    .subfolder-group {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      transition: var(--transition);
+    }
+
+    .subfolder-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .subfolder-group:hover {
+      border-color: rgba(168, 85, 247, 0.35);
+    }
+
+    .subfolder-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      cursor: pointer;
+      user-select: none;
+      background: var(--bg-card);
+      transition: background 0.2s;
+    }
+
+    .subfolder-header:hover {
+      background: var(--bg-subcard-hover);
+    }
+
+    .subfolder-title-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subfolder-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: rgba(168, 85, 247, 0.12);
+      color: var(--accent-purple);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .subfolder-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .subfolder-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 7px;
+      border-radius: 8px;
+    }
+
+    .subfolder-toggle-btn {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .subfolder-toggle-btn svg {
+      width: 15px;
+      height: 15px;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .subfolder-group.open .subfolder-toggle-btn svg {
+      transform: rotate(180deg);
+      color: var(--accent-purple);
+    }
+
+    .subfolder-drawer {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      background: var(--bg-subcard);
+      border-top: 1px solid transparent;
+    }
+
+    .subfolder-group.open .subfolder-drawer {
+      grid-template-rows: 1fr;
+      border-top-color: var(--border-color);
+    }
+
+    .subfolder-items {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding: 0 12px;
+      transition: padding 0.25s;
+    }
+
+    .subfolder-group.open .subfolder-items {
+      padding: 10px 12px 14px;
+    }
+
+    .badge-env {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: var(--transition);
+      user-select: none;
+    }
+    .badge-env.local {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-blue);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+    .badge-env.local:hover {
+      background: rgba(56, 189, 248, 0.18);
+    }
+    .badge-env.github {
+      background: rgba(0, 255, 136, 0.1);
+      color: var(--accent-green);
+      border-color: rgba(0, 255, 136, 0.3);
+    }
+    .badge-env .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
     /* Empty state / Loading */
     .status-msg {
       grid-column: 1 / -1;
@@ -414,16 +618,21 @@
 
   <div class="container">
     <header>
-      <div class="badge-hub">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-          <polyline points="2 17 12 22 22 17"></polyline>
-          <polyline points="2 12 12 17 22 12"></polyline>
-        </svg>
-        Diagram Repository
+      <div style="display:flex; justify-content:center; gap:8px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">
+        <div class="badge-hub">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          Diagrams & Knowledge Hub
+        </div>
+        <div id="env-badge" class="badge-env" title="Loading environment mode...">
+          <span class="status-dot"></span> Checking Mode...
+        </div>
       </div>
-      <h1>Notion Diagrams Hub</h1>
-      <p class="subtitle">Select a category folder below to view architecture diagrams with interactive sidebars and service breakdowns.</p>
+      <h1>Notion Diagrams & Docs Hub</h1>
+      <p class="subtitle">Select a category folder below to view architecture diagrams with interactive sidebars, or read comprehensive study guides and interview preps.</p>
     </header>
 
     <div class="controls-bar">
@@ -450,7 +659,7 @@
     const GITHUB_REPO = "notion-svg-viewer";
 
     // Known acronyms to format cleanly in uppercase
-    const ACRONYMS = new Set(["AWS", "GCP", "AZURE", "API", "DB", "K8S", "CI", "CD", "DNS", "CDN", "IAM", "VPC"]);
+    const ACRONYMS = new Set(["AWS", "GCP", "AZURE", "API", "DB", "K8S", "CI", "CD", "DNS", "CDN", "IAM", "VPC", "DSA", "SQL"]);
 
     /**
      * Converts a folder slug like "cloud-architecture" to "Cloud Architecture"
@@ -460,7 +669,9 @@
       return slug
         .replace(/[-_]/g, " ")
         .split(" ")
+        .filter(Boolean)
         .map(word => {
+          if (word === "&") return "&";
           const upper = word.toUpperCase();
           if (ACRONYMS.has(upper)) return upper;
           return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
@@ -469,14 +680,19 @@
     }
 
     /**
-     * Converts a filename like "aws.html" or "system-design.html" to a clean title like "AWS"
+     * Converts a filename like "aws.html" or "Interiview_Prep_1.md" to a clean title
      */
     function formatDiagramTitle(filename) {
-      let base = filename.replace(/\.html$/i, "");
+      let base = filename.replace(/\.(html|md)$/i, "");
+      if (base.toLowerCase() === "readme") return "Overview & Index";
       return base
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .replace(/Interiview/gi, "Interview")
         .replace(/[-_]/g, " ")
         .split(" ")
+        .filter(Boolean)
         .map(word => {
+          if (word === "&") return "&";
           const upper = word.toUpperCase();
           if (ACRONYMS.has(upper)) return upper;
           return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
@@ -485,8 +701,11 @@
     }
 
     /**
-     * Parses a list of relative paths and groups them by their parent category folder.
-     * Example input: ["cloud-architecture/aws.html", "cloud-architecture/azure.html"]
+     * Parses relative paths into root categories with nested subfolders.
+     * Example: "Interview Prep/React & Node/Interiview_Prep_1.md"
+     * -> Root Category: "Interview Prep"
+     * -> Subfolder: "React & Node"
+     * -> Item: "Interview Prep 1"
      */
     function groupPathsByFolder(paths) {
       const folderMap = new Map();
@@ -494,47 +713,128 @@
       paths.forEach(rawPath => {
         // Normalize slashes
         const normalized = rawPath.replace(/\\/g, "/").trim();
-        if (!normalized.toLowerCase().endsWith(".html") || normalized.toLowerCase() === "index.html") {
+        const lower = normalized.toLowerCase();
+        if (
+          (!lower.endsWith(".html") && !lower.endsWith(".md")) ||
+          lower === "index.html" ||
+          lower === "viewer.html" ||
+          lower === "readme.md" // exclude root repo readme
+        ) {
           return;
         }
 
+        const isMarkdown = lower.endsWith(".md");
         const segments = normalized.split("/");
-        let folderSlug = "general";
+        
+        let rootSlug = "general";
+        let subfolderSlug = null;
         let fileName = "";
 
-        if (segments.length > 1) {
-          fileName = segments.pop();
-          folderSlug = segments.join("/");
-        } else {
+        if (segments.length === 1) {
+          rootSlug = "general";
           fileName = segments[0];
-          folderSlug = "general";
+        } else if (segments.length === 2) {
+          rootSlug = segments[0];
+          fileName = segments[1];
+        } else {
+          // 3 or more segments: Root Folder / Subfolder / File
+          rootSlug = segments[0];
+          subfolderSlug = segments.slice(1, -1).join("/");
+          fileName = segments[segments.length - 1];
         }
 
-        if (!folderMap.has(folderSlug)) {
-          folderMap.set(folderSlug, {
-            slug: folderSlug,
-            name: formatFolderName(folderSlug),
-            diagrams: []
+        if (!folderMap.has(rootSlug)) {
+          folderMap.set(rootSlug, {
+            slug: rootSlug,
+            name: formatFolderName(rootSlug),
+            directItems: [],
+            subfolders: new Map()
           });
         }
 
-        folderMap.get(folderSlug).diagrams.push({
+        const item = {
           title: formatDiagramTitle(fileName),
           fileName: fileName,
-          path: normalized
+          path: normalized,
+          isMarkdown: isMarkdown,
+          href: isMarkdown ? `viewer.html?file=${encodeURIComponent(normalized)}` : encodeURI(normalized)
+        };
+
+        const rootFolder = folderMap.get(rootSlug);
+        if (subfolderSlug) {
+          if (!rootFolder.subfolders.has(subfolderSlug)) {
+            rootFolder.subfolders.set(subfolderSlug, {
+              slug: subfolderSlug,
+              name: formatFolderName(subfolderSlug),
+              items: []
+            });
+          }
+          rootFolder.subfolders.get(subfolderSlug).items.push(item);
+        } else {
+          rootFolder.directItems.push(item);
+        }
+      });
+
+      // Sort items inside each folder and subfolder (README first, then alphabetically)
+      const sortFn = (a, b) => {
+        if (a.fileName.toLowerCase().startsWith("readme")) return -1;
+        if (b.fileName.toLowerCase().startsWith("readme")) return 1;
+        return a.title.localeCompare(b.title);
+      };
+
+      const result = [];
+      folderMap.forEach(folder => {
+        folder.directItems.sort(sortFn);
+
+        const subfolderList = Array.from(folder.subfolders.values()).map(sf => {
+          sf.items.sort(sortFn);
+          return sf;
+        });
+
+        // Sort subfolders alphabetically
+        subfolderList.sort((a, b) => a.name.localeCompare(b.name));
+
+        const totalItems = folder.directItems.length + subfolderList.reduce((acc, sf) => acc + sf.items.length, 0);
+
+        result.push({
+          slug: folder.slug,
+          name: folder.name,
+          directItems: folder.directItems,
+          subfolders: subfolderList,
+          totalCount: totalItems
         });
       });
 
-      // Sort diagrams alphabetically inside each folder
-      folderMap.forEach(folder => {
-        folder.diagrams.sort((a, b) => a.title.localeCompare(b.title));
-      });
-
-      return Array.from(folderMap.values());
+      // Sort root folders alphabetically
+      result.sort((a, b) => a.name.localeCompare(b.name));
+      return result;
     }
 
     /**
-     * Renders the folder cards and collapsible submenus
+     * Renders an individual diagram or markdown document button
+     */
+    function renderDiagramItem(diagram) {
+      return `
+        <a href="${diagram.href}" class="diagram-btn ${diagram.isMarkdown ? 'is-markdown' : ''}">
+          <div class="diagram-btn-left">
+            <div class="diagram-btn-icon">${diagram.isMarkdown ? 'MD' : diagram.title.slice(0, 3)}</div>
+            <div>
+              <span class="diagram-btn-title">${diagram.title}</span>
+              <span class="item-type-pill ${diagram.isMarkdown ? 'pill-md' : 'pill-html'}">${diagram.isMarkdown ? 'DOC' : 'HTML'}</span>
+            </div>
+          </div>
+          <div class="diagram-btn-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </div>
+        </a>
+      `;
+    }
+
+    /**
+     * Renders the folder cards, collapsible submenus, and nested subfolders
      */
     let currentFolders = [];
 
@@ -546,16 +846,38 @@
 
       // Filter based on search query
       const filteredFolders = folders.map(folder => {
-        const folderMatches = folder.name.toLowerCase().includes(searchQuery);
-        const matchedDiagrams = folder.diagrams.filter(d => 
-          folderMatches || d.title.toLowerCase().includes(searchQuery) || d.fileName.toLowerCase().includes(searchQuery)
+        const rootMatches = folder.name.toLowerCase().includes(searchQuery);
+
+        // Filter direct items
+        const matchedDirect = folder.directItems.filter(d => 
+          rootMatches || d.title.toLowerCase().includes(searchQuery) || d.fileName.toLowerCase().includes(searchQuery)
         );
 
-        if (matchedDiagrams.length > 0) {
+        // Filter subfolders and their nested items
+        const matchedSubfolders = folder.subfolders.map(sf => {
+          const sfMatches = rootMatches || sf.name.toLowerCase().includes(searchQuery);
+          const matchedSfItems = sf.items.filter(d =>
+            sfMatches || d.title.toLowerCase().includes(searchQuery) || d.fileName.toLowerCase().includes(searchQuery)
+          );
+
+          if (matchedSfItems.length > 0) {
+            return {
+              ...sf,
+              items: matchedSfItems,
+              shouldOpen: true
+            };
+          }
+          return null;
+        }).filter(Boolean);
+
+        const totalMatched = matchedDirect.length + matchedSubfolders.reduce((acc, sf) => acc + sf.items.length, 0);
+
+        if (totalMatched > 0) {
           return {
             ...folder,
-            diagrams: matchedDiagrams,
-            // Automatically open if search is active
+            directItems: matchedDirect,
+            subfolders: matchedSubfolders,
+            totalCount: totalMatched,
             shouldOpen: searchQuery.length > 0
           };
         }
@@ -569,6 +891,16 @@
           </div>
         `;
         return;
+      }
+
+      // Responsive column distribution (prevents empty row gaps across columns)
+      const numCols = window.innerWidth <= 768 ? 1 : 2;
+      const colContainers = [];
+      for (let c = 0; c < numCols; c++) {
+        const col = document.createElement("div");
+        col.className = "grid-column";
+        gridContainer.appendChild(col);
+        colContainers.push(col);
       }
 
       filteredFolders.forEach((folder, idx) => {
@@ -587,7 +919,7 @@
               <div class="folder-info">
                 <div class="folder-name">${folder.name}</div>
                 <div class="folder-meta">
-                  <span class="badge-count">${folder.diagrams.length} ${folder.diagrams.length === 1 ? 'diagram' : 'diagrams'}</span>
+                  <span class="badge-count">${folder.totalCount} ${folder.totalCount === 1 ? 'item' : 'items'}</span>
                   <span>•</span>
                   <span>/${folder.slug}</span>
                 </div>
@@ -602,25 +934,55 @@
 
           <div class="folder-submenu">
             <div class="submenu-content">
-              ${folder.diagrams.map(diagram => `
-                <a href="${diagram.path}" class="diagram-btn">
-                  <div class="diagram-btn-left">
-                    <div class="diagram-btn-icon">${diagram.title.slice(0, 3)}</div>
-                    <div class="diagram-btn-title">${diagram.title}</div>
+              ${folder.directItems.map(renderDiagramItem).join("")}
+
+              ${folder.subfolders.map(sf => `
+                <div class="subfolder-group ${sf.shouldOpen !== false ? 'open' : ''}">
+                  <div class="subfolder-header" role="button" tabindex="0" aria-expanded="${sf.shouldOpen !== false}">
+                    <div class="subfolder-title-area">
+                      <div class="subfolder-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                      </div>
+                      <span class="subfolder-name">${sf.name}</span>
+                      <span class="subfolder-badge">${sf.items.length} ${sf.items.length === 1 ? 'item' : 'items'}</span>
+                    </div>
+                    <div class="subfolder-toggle-btn">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
                   </div>
-                  <div class="diagram-btn-arrow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                      <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
+                  <div class="subfolder-drawer">
+                    <div class="subfolder-items">
+                      ${sf.items.map(renderDiagramItem).join("")}
+                    </div>
                   </div>
-                </a>
+                </div>
               `).join("")}
             </div>
           </div>
         `;
 
-        // Toggle handler
+        // Subfolder accordion toggle handlers
+        card.querySelectorAll(".subfolder-group").forEach(subGroup => {
+          const subHeader = subGroup.querySelector(".subfolder-header");
+          const toggleSub = (e) => {
+            e.stopPropagation();
+            const isOpen = subGroup.classList.toggle("open");
+            subHeader.setAttribute("aria-expanded", isOpen);
+          };
+          subHeader.addEventListener("click", toggleSub);
+          subHeader.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggleSub(e);
+            }
+          });
+        });
+
+        // Parent card toggle handler
         const header = card.querySelector(".folder-header");
         const toggle = () => {
           const isOpen = card.classList.toggle("open");
@@ -635,7 +997,8 @@
           }
         });
 
-        gridContainer.appendChild(card);
+        // Distribute card into its column track
+        colContainers[idx % numCols].appendChild(card);
       });
     }
 
@@ -672,32 +1035,70 @@
         renderGrid(currentFolders);
       }
 
-      // 3. Online dynamic discovery via GitHub Recursive Tree API
-      // Automatically finds any new folders or .html files pushed to the repo
-      try {
-        const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/git/trees/main?recursive=1`;
-        const res = await fetch(apiUrl);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.tree)) {
-            let foundNew = false;
-            data.tree.forEach(item => {
-              if (item.type === "blob" && item.path.endsWith(".html") && item.path !== "index.html") {
-                if (!pathsSet.has(item.path)) {
-                  pathsSet.add(item.path);
-                  foundNew = true;
-                }
-              }
-            });
+      // 3. Online dynamic discovery vs Local Mode
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceSource = urlParams.get("source"); // 'local' | 'github'
+      const isLocalHost = window.location.protocol === "file:" || 
+                          window.location.hostname === "localhost" || 
+                          window.location.hostname === "127.0.0.1";
+      const isLocalMode = forceSource === "local" || (isLocalHost && forceSource !== "github");
 
-            if (foundNew || currentFolders.length === 0) {
-              currentFolders = groupPathsByFolder(Array.from(pathsSet));
-              renderGrid(currentFolders);
-            }
+      // Update Header Environment Badge
+      const envBadge = document.getElementById("env-badge");
+      if (envBadge) {
+        if (isLocalMode) {
+          envBadge.className = "badge-env local";
+          envBadge.innerHTML = `<span class="status-dot"></span> Local Mode (diagrams.js)`;
+          envBadge.title = "Local Testing: Loading local manifests. Click to simulate GitHub Tree API.";
+          envBadge.style.cursor = "pointer";
+          envBadge.onclick = () => {
+            const next = forceSource === "github" ? "" : "?source=github";
+            window.location.search = next;
+          };
+        } else {
+          envBadge.className = "badge-env github";
+          envBadge.innerHTML = `<span class="status-dot"></span> GitHub Pages (Live API)`;
+          envBadge.title = isLocalHost ? "Simulating GitHub API locally. Click to return to local manifests." : "Deployed Mode: Querying GitHub Trees API.";
+          if (isLocalHost) {
+            envBadge.style.cursor = "pointer";
+            envBadge.onclick = () => { window.location.search = ""; };
           }
         }
-      } catch (err) {
-        // Offline / network failure handled gracefully
+      }
+
+      // If in GitHub mode, query the recursive tree API
+      if (!isLocalMode || pathsSet.size === 0) {
+        try {
+          const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/git/trees/main?recursive=1`;
+          const res = await fetch(apiUrl);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.tree)) {
+              let foundNew = false;
+              data.tree.forEach(item => {
+                if (
+                  item.type === "blob" &&
+                  (item.path.endsWith(".html") || item.path.endsWith(".md")) &&
+                  item.path !== "index.html" &&
+                  item.path !== "viewer.html" &&
+                  item.path !== "README.md"
+                ) {
+                  if (!pathsSet.has(item.path)) {
+                    pathsSet.add(item.path);
+                    foundNew = true;
+                  }
+                }
+              });
+
+              if (foundNew || currentFolders.length === 0) {
+                currentFolders = groupPathsByFolder(Array.from(pathsSet));
+                renderGrid(currentFolders);
+              }
+            }
+          }
+        } catch (err) {
+          // Offline / network failure handled gracefully
+        }
       }
 
       // Fallback if completely empty
@@ -714,6 +1115,15 @@
     // Attach search input listener
     document.getElementById("search-input").addEventListener("input", () => {
       renderGrid(currentFolders);
+    });
+
+    // Re-layout on screen resize (between 1-col mobile and 2-col desktop)
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        renderGrid(currentFolders);
+      }, 150);
     });
 
     // Start discovery
