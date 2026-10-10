@@ -719,6 +719,76 @@
         .join(" ");
     }
 
+    // Centralized set of AI and LLM instruction files to exclude from the hub directory
+    const IGNORED_AI_FILENAMES = new Set([
+      "agents.md",
+      "agent.md",
+      "skills.md",
+      "skill.md",
+      "claude.md",
+      "gemini.md",
+      "copilot-instructions.md",
+      "prompt.md",
+      "prompts.md",
+      "license.md",
+      "license.txt",
+      "contributing.md",
+      "code_of_conduct.md",
+      "security.md",
+      "changelog.md"
+    ]);
+
+    // Directories to exclude from hub navigation (hidden config, AI tools, dependencies)
+    const IGNORED_DIRECTORY_KEYWORDS = [
+      "/.agents/",
+      "/.gemini/",
+      "/.github/",
+      "/.vscode/",
+      "/.idea/",
+      "/skills/",
+      "/agents/",
+      "/prompts/",
+      "/plugins/",
+      "/node_modules/"
+    ];
+
+    /**
+     * Determines whether a file path should be excluded from the hub menu.
+     * Automatically filters out AI agent prompts, system infrastructure, and dotfiles.
+     */
+    function isIgnoredPath(rawPath) {
+      if (!rawPath) return true;
+      const normalized = ("/" + rawPath.replace(/\\/g, "/").trim()).replace(/\/+/g, "/").toLowerCase();
+      const fileName = normalized.split("/").pop();
+
+      // 1. Only allow .html and .md files
+      if (!fileName.endsWith(".html") && !fileName.endsWith(".md")) {
+        return true;
+      }
+
+      // 2. Ignore hidden files and dot-folders (.agents, .github, etc.)
+      if (normalized.includes("/.")) {
+        return true;
+      }
+
+      // 3. Ignore root repository application files and root readme
+      if (normalized === "/readme.md" || normalized === "/index.html" || normalized === "/viewer.html") {
+        return true;
+      }
+
+      // 4. Ignore AI agent, skill, and LLM guideline files anywhere in the repo
+      if (IGNORED_AI_FILENAMES.has(fileName)) {
+        return true;
+      }
+
+      // 5. Ignore AI / system directories
+      if (IGNORED_DIRECTORY_KEYWORDS.some(kw => normalized.includes(kw))) {
+        return true;
+      }
+
+      return false;
+    }
+
     /**
      * Parses relative paths into root categories with nested subfolders.
      * Example: "Interview Prep/React & Node/Interiview_Prep_1.md"
@@ -730,17 +800,13 @@
       const folderMap = new Map();
 
       paths.forEach(rawPath => {
+        if (isIgnoredPath(rawPath)) {
+          return;
+        }
+
         // Normalize slashes
         const normalized = rawPath.replace(/\\/g, "/").trim();
         const lower = normalized.toLowerCase();
-        if (
-          (!lower.endsWith(".html") && !lower.endsWith(".md")) ||
-          lower === "index.html" ||
-          lower === "viewer.html" ||
-          lower === "readme.md" // exclude root repo readme
-        ) {
-          return;
-        }
 
         const isMarkdown = lower.endsWith(".md");
         const segments = normalized.split("/");
@@ -1095,13 +1161,7 @@
             if (Array.isArray(data.tree)) {
               let foundNew = false;
               data.tree.forEach(item => {
-                if (
-                  item.type === "blob" &&
-                  (item.path.endsWith(".html") || item.path.endsWith(".md")) &&
-                  item.path !== "index.html" &&
-                  item.path !== "viewer.html" &&
-                  item.path !== "README.md"
-                ) {
+                if (item.type === "blob" && !isIgnoredPath(item.path)) {
                   if (!pathsSet.has(item.path)) {
                     pathsSet.add(item.path);
                     foundNew = true;
