@@ -35,6 +35,11 @@
       --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 84px;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -293,6 +298,34 @@
       color: var(--text-primary);
       font-size: 15px;
       line-height: 1.7;
+    }
+
+    .markdown-body h1,
+    .markdown-body h2,
+    .markdown-body h3,
+    .markdown-body h4 {
+      scroll-margin-top: 84px;
+      transition: background-color 0.4s ease;
+    }
+
+    .markdown-body h1:target,
+    .markdown-body h2:target,
+    .markdown-body h3:target,
+    .markdown-body h4:target,
+    .target-highlight-active {
+      animation: targetHighlight 1.8s ease-out;
+    }
+
+    @keyframes targetHighlight {
+      0% {
+        background-color: rgba(168, 85, 247, 0.35);
+        border-radius: 6px;
+        padding-left: 6px;
+      }
+      100% {
+        background-color: transparent;
+        padding-left: 0;
+      }
     }
 
     .markdown-body h1 {
@@ -726,6 +759,30 @@
 
       // Build Table of Contents
       buildTableOfContents(container);
+
+      // Handle initial anchor hash if present on load
+      if (window.location.hash) {
+        setTimeout(() => {
+          const hashId = window.location.hash.substring(1);
+          const targetEl = document.getElementById(hashId);
+          if (targetEl) scrollToHeading(targetEl);
+        }, 200);
+      }
+    }
+
+    // Smoothly scroll to heading ensuring it is completely visible below sticky header
+    function scrollToHeading(targetEl) {
+      if (!targetEl) return;
+      const headerEl = document.querySelector("header");
+      const headerHeight = headerEl ? headerEl.offsetHeight : 60;
+      const targetTop = targetEl.getBoundingClientRect().top + window.pageYOffset - (headerHeight + 28);
+      window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: "smooth"
+      });
+      targetEl.classList.remove("target-highlight-active");
+      void targetEl.offsetWidth; // trigger reflow
+      targetEl.classList.add("target-highlight-active");
     }
 
     // Generate dynamic Table of Contents
@@ -753,6 +810,14 @@
           a.href = `#${slug}`;
           a.textContent = text;
           a.title = text;
+          a.onclick = (e) => {
+            e.preventDefault();
+            const targetEl = document.getElementById(slug);
+            if (targetEl) {
+              scrollToHeading(targetEl);
+              history.replaceState(null, null, `#${slug}`);
+            }
+          };
 
           li.appendChild(a);
           tocList.appendChild(li);
