@@ -39,6 +39,25 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    }
+
+    /* Custom Webkit Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
     }
 
     body {
@@ -173,13 +192,36 @@
       top: 80px;
       max-height: calc(100vh - 100px);
       overflow-y: auto;
+      overflow-x: hidden;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--card-radius);
-      padding: 18px;
+      padding: 18px 14px 18px 18px;
       display: flex;
       flex-direction: column;
       gap: 12px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(168, 85, 247, 0.35) rgba(0, 0, 0, 0.2);
+    }
+
+    .toc-sidebar::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .toc-sidebar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      margin: 8px 0;
+    }
+
+    .toc-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(168, 85, 247, 0.3);
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .toc-sidebar::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-purple);
     }
 
     .toc-title {
@@ -356,6 +398,24 @@
       padding: 16px 18px;
       margin: 18px 0;
       overflow-x: auto;
+    }
+
+    .markdown-body pre::-webkit-scrollbar {
+      height: 5px;
+    }
+
+    .markdown-body pre::-webkit-scrollbar-track {
+      background: #090a0f;
+      border-radius: 4px;
+    }
+
+    .markdown-body pre::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 4px;
+    }
+
+    .markdown-body pre::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-blue);
     }
 
     .markdown-body code {
