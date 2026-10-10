@@ -982,14 +982,16 @@
 
           currentSection = document.createElement("section");
           currentSection.className = "collapsible-section open";
+          const thisSection = currentSection;
 
           child.classList.add("collapsible-heading");
+          child.title = "Click to toggle section";
           child.prepend(createChevronSvg());
           child.setAttribute("aria-expanded", "true");
 
           child.addEventListener("click", (e) => {
             if (e.target.closest("a, input, button")) return;
-            const isOpen = currentSection.classList.toggle("open");
+            const isOpen = thisSection.classList.toggle("open");
             child.setAttribute("aria-expanded", isOpen);
           });
 
@@ -1003,14 +1005,16 @@
         } else if (tag === "h3") {
           currentQuestion = document.createElement("div");
           currentQuestion.className = "collapsible-question open";
+          const thisQuestion = currentQuestion;
 
           child.classList.add("collapsible-heading");
+          child.title = "Click to toggle answer";
           child.prepend(createChevronSvg());
           child.setAttribute("aria-expanded", "true");
 
           child.addEventListener("click", (e) => {
             if (e.target.closest("a, input, button")) return;
-            const isOpen = currentQuestion.classList.toggle("open");
+            const isOpen = thisQuestion.classList.toggle("open");
             child.setAttribute("aria-expanded", isOpen);
           });
 
@@ -1111,6 +1115,7 @@
           // Create Section Group in TOC
           currentTocSectionGroup = document.createElement("li");
           currentTocSectionGroup.className = "toc-section-group open";
+          const thisTocSectionGroup = currentTocSectionGroup;
 
           const headerDiv = document.createElement("div");
           headerDiv.className = "toc-section-header";
@@ -1129,7 +1134,7 @@
                 const h2 = parentSection.querySelector("h2.collapsible-heading");
                 if (h2) h2.setAttribute("aria-expanded", "true");
               }
-              currentTocSectionGroup.classList.add("open");
+              thisTocSectionGroup.classList.add("open");
               scrollToHeading(targetEl);
               history.replaceState(null, null, `#${slug}`);
             }
@@ -1145,7 +1150,7 @@
           `;
           toggleBtn.onclick = (e) => {
             e.stopPropagation();
-            currentTocSectionGroup.classList.toggle("open");
+            thisTocSectionGroup.classList.toggle("open");
           };
 
           headerDiv.appendChild(a);
@@ -1159,6 +1164,7 @@
           tocList.appendChild(currentTocSectionGroup);
         } else if (level === 3) {
           // Question item in TOC
+          const parentTocGroup = currentTocSectionGroup;
           const li = document.createElement("li");
           li.className = "toc-item level-3";
 
@@ -1187,8 +1193,8 @@
               }
 
               // 3. Ensure TOC group is open
-              if (currentTocSectionGroup) {
-                currentTocSectionGroup.classList.add("open");
+              if (parentTocGroup) {
+                parentTocGroup.classList.add("open");
               }
 
               // 4. Smooth scroll to question with offset and pulse
