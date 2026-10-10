@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
   <!-- Syntax Highlighting & Markdown Parser -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -750,9 +750,10 @@
       color: #e2e8f0;
     }
 
-    .markdown-body pre code {
-      background: transparent;
-      padding: 0;
+    .markdown-body pre code,
+    .markdown-body pre code.hljs {
+      background: transparent !important;
+      padding: 0 !important;
       border-radius: 0;
       line-height: 1.6;
     }
@@ -1130,6 +1131,33 @@
       container.appendChild(fragment);
     }
 
+    // Language-specific color accents and labels
+    const LANG_METADATA = {
+      javascript: { name: "JavaScript", color: "#f7df1e", bg: "rgba(247, 223, 30, 0.12)", border: "rgba(247, 223, 30, 0.35)" },
+      js: { name: "JavaScript", color: "#f7df1e", bg: "rgba(247, 223, 30, 0.12)", border: "rgba(247, 223, 30, 0.35)" },
+      typescript: { name: "TypeScript", color: "#3178c6", bg: "rgba(49, 120, 198, 0.15)", border: "rgba(49, 120, 198, 0.35)" },
+      ts: { name: "TypeScript", color: "#3178c6", bg: "rgba(49, 120, 198, 0.15)", border: "rgba(49, 120, 198, 0.35)" },
+      jsx: { name: "React JSX", color: "#61dafb", bg: "rgba(97, 218, 251, 0.12)", border: "rgba(97, 218, 251, 0.35)" },
+      tsx: { name: "React TSX", color: "#61dafb", bg: "rgba(97, 218, 251, 0.12)", border: "rgba(97, 218, 251, 0.35)" },
+      html: { name: "HTML", color: "#f16529", bg: "rgba(241, 101, 41, 0.12)", border: "rgba(241, 101, 41, 0.35)" },
+      css: { name: "CSS", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.35)" },
+      json: { name: "JSON", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.12)", border: "rgba(245, 158, 11, 0.35)" },
+      python: { name: "Python", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.35)" },
+      py: { name: "Python", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.35)" },
+      bash: { name: "Bash", color: "#00ff88", bg: "rgba(0, 255, 136, 0.12)", border: "rgba(0, 255, 136, 0.35)" },
+      sh: { name: "Shell", color: "#00ff88", bg: "rgba(0, 255, 136, 0.12)", border: "rgba(0, 255, 136, 0.35)" },
+      shell: { name: "Shell", color: "#00ff88", bg: "rgba(0, 255, 136, 0.12)", border: "rgba(0, 255, 136, 0.35)" },
+      sql: { name: "SQL", color: "#c084fc", bg: "rgba(192, 132, 252, 0.12)", border: "rgba(192, 132, 252, 0.35)" },
+      java: { name: "Java", color: "#f89820", bg: "rgba(248, 152, 32, 0.12)", border: "rgba(248, 152, 32, 0.35)" },
+      cpp: { name: "C++", color: "#00599c", bg: "rgba(0, 89, 156, 0.12)", border: "rgba(0, 89, 156, 0.35)" },
+      c: { name: "C", color: "#8b949e", bg: "rgba(139, 148, 158, 0.12)", border: "rgba(139, 148, 158, 0.35)" },
+      csharp: { name: "C#", color: "#9b4f96", bg: "rgba(155, 79, 150, 0.12)", border: "rgba(155, 79, 150, 0.35)" },
+      yaml: { name: "YAML", color: "#f43f5e", bg: "rgba(244, 63, 94, 0.12)", border: "rgba(244, 63, 94, 0.35)" },
+      yml: { name: "YAML", color: "#f43f5e", bg: "rgba(244, 63, 94, 0.12)", border: "rgba(244, 63, 94, 0.35)" },
+      markdown: { name: "Markdown", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.35)" },
+      md: { name: "Markdown", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.35)" }
+    };
+
     // Enhances code blocks into collapsible containers with language badges, copy and toggle buttons
     function enhanceCollapsibleCodeBlocks(container) {
       container.querySelectorAll("pre").forEach(pre => {
@@ -1137,40 +1165,34 @@
         const codeText = codeEl ? codeEl.innerText : pre.innerText;
         const lineCount = codeText.trim().split("\n").length;
 
-        // Detect language name
-        let langName = "Code";
-        if (codeEl && codeEl.className) {
-          const match = codeEl.className.match(/language-([a-z0-9_-]+)/i);
-          if (match && match[1]) {
-            const rawLang = match[1].toLowerCase();
-            const langMap = {
-              js: "JavaScript",
-              javascript: "JavaScript",
-              ts: "TypeScript",
-              typescript: "TypeScript",
-              html: "HTML",
-              css: "CSS",
-              json: "JSON",
-              bash: "Bash",
-              sh: "Shell",
-              shell: "Shell",
-              py: "Python",
-              python: "Python",
-              sql: "SQL",
-              yaml: "YAML",
-              yml: "YAML",
-              xml: "XML",
-              java: "Java",
-              cpp: "C++",
-              c: "C",
-              csharp: "C#"
-            };
-            langName = langMap[rawLang] || match[1].toUpperCase();
+        // 1. Run highlight.js syntax highlighting on the code element
+        if (codeEl && typeof hljs !== "undefined") {
+          try {
+            hljs.highlightElement(codeEl);
+          } catch (err) {
+            console.warn("Syntax highlight error:", err);
           }
         }
 
+        // 2. Detect language name and metadata
+        let rawLang = "code";
+        if (codeEl && codeEl.className) {
+          const match = codeEl.className.match(/language-([a-z0-9_-]+)/i);
+          if (match && match[1]) {
+            rawLang = match[1].toLowerCase();
+          }
+        }
+
+        const langMeta = LANG_METADATA[rawLang] || {
+          name: rawLang !== "code" ? rawLang.toUpperCase() : "Code",
+          color: "var(--accent-blue)",
+          bg: "rgba(56, 189, 248, 0.1)",
+          border: "rgba(56, 189, 248, 0.25)"
+        };
+
         const wrapper = document.createElement("div");
         wrapper.className = "code-block-wrapper open";
+        wrapper.style.borderLeft = `3px solid ${langMeta.color}`;
         const thisWrapper = wrapper;
 
         const header = document.createElement("div");
@@ -1180,10 +1202,10 @@
         const left = document.createElement("div");
         left.className = "code-header-left";
         left.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="code-chevron">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="code-chevron" style="color:${langMeta.color};">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
-          <span class="code-lang-label">${langName}</span>
+          <span class="code-lang-label" style="color:${langMeta.color}; background:${langMeta.bg}; border-color:${langMeta.border};">${langMeta.name}</span>
           <span class="code-line-count">${lineCount} ${lineCount === 1 ? 'line' : 'lines'}</span>
         `;
 
