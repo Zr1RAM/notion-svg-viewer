@@ -266,9 +266,118 @@
       background: rgba(255, 255, 255, 0.05);
     }
 
+    /* TOC Nested Section Groups */
+    .toc-section-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-bottom: 6px;
+    }
+
+    .toc-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+
+    .toc-section-header:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .toc-section-header a {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 600;
+      color: var(--text-primary);
+      padding: 6px 8px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .toc-section-toggle {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .toc-section-toggle:hover {
+      color: var(--accent-purple);
+      background: rgba(168, 85, 247, 0.15);
+    }
+
+    .toc-section-toggle svg {
+      width: 12px;
+      height: 12px;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toc-section-group.open .toc-section-toggle svg {
+      transform: rotate(90deg);
+      color: var(--accent-purple);
+    }
+
+    .toc-section-group:not(.open) .toc-sublist {
+      display: none;
+    }
+
+    .toc-sublist {
+      list-style: none;
+      padding-left: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      margin-left: 12px;
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .toc-sublist .toc-item a {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      padding: 4px 8px;
+    }
+
+    .toc-sublist .toc-item a:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .toc-toggle-all-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 3px 6px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: var(--transition);
+    }
+
+    .toc-toggle-all-btn:hover {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+
     .toc-item.level-2 { padding-left: 0; font-weight: 600; color: var(--text-primary); }
-    .toc-item.level-3 { padding-left: 14px; font-size: 12px; }
-    .toc-item.level-4 { padding-left: 24px; font-size: 12px; }
+    .toc-item.level-3 { padding-left: 4px; font-size: 12px; }
+    .toc-item.level-4 { padding-left: 16px; font-size: 12px; }
 
     @media (max-width: 992px) {
       .toc-sidebar {
@@ -326,6 +435,64 @@
         background-color: transparent;
         padding-left: 0;
       }
+    }
+
+    /* Collapsible Sections & Questions */
+    .collapsible-section {
+      margin-bottom: 36px;
+    }
+
+    .collapsible-section:not(.open) .section-body {
+      display: none;
+    }
+
+    .collapsible-question {
+      margin: 20px 0;
+      padding-left: 14px;
+      border-left: 2px solid rgba(255, 255, 255, 0.08);
+      transition: border-color 0.2s;
+    }
+
+    .collapsible-question:hover {
+      border-left-color: rgba(168, 85, 247, 0.45);
+    }
+
+    .collapsible-question:not(.open) .question-body {
+      display: none;
+    }
+
+    .collapsible-heading {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      transition: color 0.2s;
+    }
+
+    .collapsible-heading:hover {
+      color: var(--accent-purple);
+    }
+
+    .heading-chevron {
+      width: 18px;
+      height: 18px;
+      margin-top: 4px;
+      flex-shrink: 0;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
+      color: var(--text-muted);
+    }
+
+    .collapsible-section.open > .collapsible-heading .heading-chevron,
+    .collapsible-question.open > .collapsible-heading .heading-chevron {
+      transform: rotate(90deg);
+      color: var(--accent-purple);
+    }
+
+    .collapsible-section:not(.open) > .collapsible-heading .heading-chevron,
+    .collapsible-question:not(.open) > .collapsible-heading .heading-chevron {
+      transform: rotate(0deg);
+      color: var(--text-muted);
     }
 
     .markdown-body h1 {
@@ -633,12 +800,20 @@
     </div>
 
     <div class="nav-right">
+      <button class="action-btn" id="btn-toggle-all" onclick="toggleAllHeadings()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="7 13 12 18 17 13"></polyline>
+          <polyline points="7 6 12 11 17 6"></polyline>
+        </svg>
+        <span id="toggle-all-text">Collapse All</span>
+      </button>
+
       <button class="action-btn" id="btn-copy-raw" onclick="copyDocumentMarkdown()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
         </svg>
-        <span id="copy-btn-text">Copy Raw Markdown</span>
+        <span id="copy-btn-text">Copy Raw</span>
       </button>
     </div>
   </header>
@@ -650,14 +825,12 @@
     <aside class="toc-sidebar" id="toc-sidebar">
       <div class="toc-title">
         <span>Table of Contents</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="8" y1="6" x2="21" y2="6"></line>
-          <line x1="8" y1="12" x2="21" y2="12"></line>
-          <line x1="8" y1="18" x2="21" y2="18"></line>
-          <line x1="3" y1="6" x2="3.01" y2="6"></line>
-          <line x1="3" y1="12" x2="3.01" y2="12"></line>
-          <line x1="3" y1="18" x2="3.01" y2="18"></line>
-        </svg>
+        <button class="toc-toggle-all-btn" onclick="toggleAllHeadings()" title="Collapse / Expand All Sections & Questions">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="7 13 12 18 17 13"></polyline>
+            <polyline points="7 6 12 11 17 6"></polyline>
+          </svg>
+        </button>
       </div>
       <ul class="toc-list" id="toc-list">
         <!-- Generated dynamically -->
@@ -734,13 +907,16 @@
       const preprocessed = preprocessCallouts(markdownText);
       const rawHtml = marked.parse(preprocessed);
       const cleanHtml = DOMPurify.sanitize(rawHtml, {
-        ADD_TAGS: ['div', 'input', 'button'],
-        ADD_ATTR: ['class', 'type', 'checked', 'onclick', 'id']
+        ADD_TAGS: ['div', 'input', 'button', 'section'],
+        ADD_ATTR: ['class', 'type', 'checked', 'onclick', 'id', 'aria-expanded']
       });
 
       const container = document.getElementById("content-container");
       container.className = "markdown-body";
       container.innerHTML = cleanHtml;
+
+      // Wrap H2 Sections and H3 Questions into interactive collapsible groups
+      enhanceCollapsibleHierarchy(container);
 
       // Add copy buttons to code blocks
       container.querySelectorAll("pre").forEach(pre => {
@@ -757,7 +933,7 @@
         pre.appendChild(btn);
       });
 
-      // Build Table of Contents
+      // Build Table of Contents with nested collapsible sections
       buildTableOfContents(container);
 
       // Handle initial anchor hash if present on load
@@ -767,6 +943,131 @@
           const targetEl = document.getElementById(hashId);
           if (targetEl) scrollToHeading(targetEl);
         }, 200);
+      }
+    }
+
+    // Creates SVG Chevron for collapsible headings
+    function createChevronSvg() {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor");
+      svg.setAttribute("stroke-width", "2.5");
+      svg.setAttribute("stroke-linecap", "round");
+      svg.setAttribute("stroke-linejoin", "round");
+      svg.setAttribute("class", "heading-chevron");
+      const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      polyline.setAttribute("points", "9 18 15 12 9 6");
+      svg.appendChild(polyline);
+      return svg;
+    }
+
+    // Groups markdown DOM into Collapsible Sections (H2) and Questions (H3)
+    function enhanceCollapsibleHierarchy(container) {
+      const children = Array.from(container.children);
+      if (children.length === 0) return;
+
+      const fragment = document.createDocumentFragment();
+      let currentSection = null;
+      let currentSectionBody = null;
+      let currentQuestion = null;
+      let currentQuestionBody = null;
+
+      children.forEach(child => {
+        const tag = child.tagName ? child.tagName.toLowerCase() : "";
+
+        if (tag === "h2") {
+          currentQuestion = null;
+          currentQuestionBody = null;
+
+          currentSection = document.createElement("section");
+          currentSection.className = "collapsible-section open";
+
+          child.classList.add("collapsible-heading");
+          child.prepend(createChevronSvg());
+          child.setAttribute("aria-expanded", "true");
+
+          child.addEventListener("click", (e) => {
+            if (e.target.closest("a, input, button")) return;
+            const isOpen = currentSection.classList.toggle("open");
+            child.setAttribute("aria-expanded", isOpen);
+          });
+
+          currentSection.appendChild(child);
+
+          currentSectionBody = document.createElement("div");
+          currentSectionBody.className = "section-body";
+          currentSection.appendChild(currentSectionBody);
+
+          fragment.appendChild(currentSection);
+        } else if (tag === "h3") {
+          currentQuestion = document.createElement("div");
+          currentQuestion.className = "collapsible-question open";
+
+          child.classList.add("collapsible-heading");
+          child.prepend(createChevronSvg());
+          child.setAttribute("aria-expanded", "true");
+
+          child.addEventListener("click", (e) => {
+            if (e.target.closest("a, input, button")) return;
+            const isOpen = currentQuestion.classList.toggle("open");
+            child.setAttribute("aria-expanded", isOpen);
+          });
+
+          currentQuestion.appendChild(child);
+
+          currentQuestionBody = document.createElement("div");
+          currentQuestionBody.className = "question-body";
+          currentQuestion.appendChild(currentQuestionBody);
+
+          if (currentSectionBody) {
+            currentSectionBody.appendChild(currentQuestion);
+          } else {
+            fragment.appendChild(currentQuestion);
+          }
+        } else {
+          if (currentQuestionBody) {
+            currentQuestionBody.appendChild(child);
+          } else if (currentSectionBody) {
+            currentSectionBody.appendChild(child);
+          } else {
+            fragment.appendChild(child);
+          }
+        }
+      });
+
+      container.innerHTML = "";
+      container.appendChild(fragment);
+    }
+
+    // Toggle all sections and questions at once
+    let allExpanded = true;
+    function toggleAllHeadings() {
+      allExpanded = !allExpanded;
+
+      // Update all collapsible sections in document
+      document.querySelectorAll(".collapsible-section").forEach(sec => {
+        sec.classList.toggle("open", allExpanded);
+        const h2 = sec.querySelector("h2.collapsible-heading");
+        if (h2) h2.setAttribute("aria-expanded", allExpanded);
+      });
+
+      // Update all collapsible questions in document
+      document.querySelectorAll(".collapsible-question").forEach(q => {
+        q.classList.toggle("open", allExpanded);
+        const h3 = q.querySelector("h3.collapsible-heading");
+        if (h3) h3.setAttribute("aria-expanded", allExpanded);
+      });
+
+      // Update all TOC section groups
+      document.querySelectorAll(".toc-section-group").forEach(grp => {
+        grp.classList.toggle("open", allExpanded);
+      });
+
+      // Update button text
+      const btnText = document.getElementById("toggle-all-text");
+      if (btnText) {
+        btnText.textContent = allExpanded ? "Collapse All" : "Expand All";
       }
     }
 
@@ -785,7 +1086,7 @@
       targetEl.classList.add("target-highlight-active");
     }
 
-    // Generate dynamic Table of Contents
+    // Generate dynamic Table of Contents with nested collapsible sections
     function buildTableOfContents(container) {
       const headings = container.querySelectorAll("h1, h2, h3, h4");
       const tocList = document.getElementById("toc-list");
@@ -796,16 +1097,116 @@
         return;
       }
 
+      let currentTocSectionGroup = null;
+      let currentTocSublist = null;
+
       headings.forEach((heading, idx) => {
         const text = heading.textContent.replace(/^#+\s*/, "").trim();
         const slug = "heading-" + idx + "-" + text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
         heading.id = slug;
 
         const level = parseInt(heading.tagName.charAt(1));
-        if (level > 1 && level <= 3) {
+
+        if (level === 2) {
+          // Create Section Group in TOC
+          currentTocSectionGroup = document.createElement("li");
+          currentTocSectionGroup.className = "toc-section-group open";
+
+          const headerDiv = document.createElement("div");
+          headerDiv.className = "toc-section-header";
+
+          const a = document.createElement("a");
+          a.href = `#${slug}`;
+          a.textContent = text;
+          a.title = text;
+          a.onclick = (e) => {
+            e.preventDefault();
+            const targetEl = document.getElementById(slug);
+            if (targetEl) {
+              const parentSection = targetEl.closest(".collapsible-section");
+              if (parentSection && !parentSection.classList.contains("open")) {
+                parentSection.classList.add("open");
+                const h2 = parentSection.querySelector("h2.collapsible-heading");
+                if (h2) h2.setAttribute("aria-expanded", "true");
+              }
+              currentTocSectionGroup.classList.add("open");
+              scrollToHeading(targetEl);
+              history.replaceState(null, null, `#${slug}`);
+            }
+          };
+
+          const toggleBtn = document.createElement("button");
+          toggleBtn.className = "toc-section-toggle";
+          toggleBtn.title = "Toggle section questions";
+          toggleBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          `;
+          toggleBtn.onclick = (e) => {
+            e.stopPropagation();
+            currentTocSectionGroup.classList.toggle("open");
+          };
+
+          headerDiv.appendChild(a);
+          headerDiv.appendChild(toggleBtn);
+          currentTocSectionGroup.appendChild(headerDiv);
+
+          currentTocSublist = document.createElement("ul");
+          currentTocSublist.className = "toc-sublist";
+          currentTocSectionGroup.appendChild(currentTocSublist);
+
+          tocList.appendChild(currentTocSectionGroup);
+        } else if (level === 3) {
+          // Question item in TOC
           const li = document.createElement("li");
-          li.className = `toc-item level-${level}`;
-          
+          li.className = "toc-item level-3";
+
+          const a = document.createElement("a");
+          a.href = `#${slug}`;
+          a.textContent = text;
+          a.title = text;
+          a.onclick = (e) => {
+            e.preventDefault();
+            const targetEl = document.getElementById(slug);
+            if (targetEl) {
+              // 1. Uncollapse parent section if closed
+              const parentSection = targetEl.closest(".collapsible-section");
+              if (parentSection && !parentSection.classList.contains("open")) {
+                parentSection.classList.add("open");
+                const h2 = parentSection.querySelector("h2.collapsible-heading");
+                if (h2) h2.setAttribute("aria-expanded", "true");
+              }
+
+              // 2. Uncollapse question itself if closed
+              const parentQuestion = targetEl.closest(".collapsible-question");
+              if (parentQuestion && !parentQuestion.classList.contains("open")) {
+                parentQuestion.classList.add("open");
+                const h3 = parentQuestion.querySelector("h3.collapsible-heading");
+                if (h3) h3.setAttribute("aria-expanded", "true");
+              }
+
+              // 3. Ensure TOC group is open
+              if (currentTocSectionGroup) {
+                currentTocSectionGroup.classList.add("open");
+              }
+
+              // 4. Smooth scroll to question with offset and pulse
+              scrollToHeading(targetEl);
+              history.replaceState(null, null, `#${slug}`);
+            }
+          };
+
+          li.appendChild(a);
+
+          if (currentTocSublist) {
+            currentTocSublist.appendChild(li);
+          } else {
+            tocList.appendChild(li);
+          }
+        } else if (level === 1) {
+          const li = document.createElement("li");
+          li.className = "toc-item level-1";
           const a = document.createElement("a");
           a.href = `#${slug}`;
           a.textContent = text;
@@ -818,7 +1219,6 @@
               history.replaceState(null, null, `#${slug}`);
             }
           };
-
           li.appendChild(a);
           tocList.appendChild(li);
         }
