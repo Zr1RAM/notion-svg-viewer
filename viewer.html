@@ -438,6 +438,26 @@
       }
     }
 
+    .search-target-highlight {
+      animation: searchTargetPulse 2.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      border-radius: 6px;
+    }
+
+    @keyframes searchTargetPulse {
+      0% {
+        background-color: rgba(245, 158, 11, 0.4);
+        outline: 2px solid var(--accent-amber);
+      }
+      65% {
+        background-color: rgba(245, 158, 11, 0.15);
+        outline: 2px solid rgba(245, 158, 11, 0.3);
+      }
+      100% {
+        background-color: transparent;
+        outline: 2px solid transparent;
+      }
+    }
+
     /* Collapsible Sections & Questions */
     .collapsible-section {
       margin-bottom: 36px;
@@ -1394,10 +1414,20 @@
 
       // Handle initial search query snippet or anchor hash if present
       const initialQuery = urlParams.get("q");
-      if (initialQuery) {
-        setTimeout(() => {
-          scrollToLineContent(decodeURIComponent(initialQuery));
-        }, 350);
+      const initialSnippet = urlParams.get("snippet");
+      if (initialSnippet || initialQuery) {
+        let attempts = 0;
+        function tryScroll() {
+          const success = scrollToLineContent(
+            initialSnippet ? decodeURIComponent(initialSnippet) : "",
+            initialQuery ? decodeURIComponent(initialQuery) : ""
+          );
+          if (!success && attempts < 4) {
+            attempts++;
+            setTimeout(tryScroll, 120);
+          }
+        }
+        setTimeout(tryScroll, 100);
       } else if (window.location.hash) {
         setTimeout(() => {
           const hashId = window.location.hash.substring(1);
@@ -2136,54 +2166,104 @@
       scrollSelectedSpotlightIntoView();
     }
 
+    function cleanMarkdownSnippet(text) {
+      if (!text) return "";
+      return text
+        .replace(/^#+\s*/, "")
+        .replace(/^\s*[-*+]\s+(\[[ xX]\]\s+)?/, "")
+        .replace(/^\s*>\s*/, "")
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\*(.*?)\*/g, "$1")
+        .replace(/__(.*?)__/g, "$1")
+        .replace(/_(.*?)_/g, "$1")
+        .replace(/`([^`]+)`/g, "$1")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
     function selectSpotlightResult(index) {
       const item = spotlightResultsData[index];
       if (!item) return;
 
       closeSpotlightModal();
 
+      const searchInput = document.getElementById("spotlight-input");
+      const currentQuery = searchInput ? searchInput.value.trim() : "";
+      const cleanedSnippet = cleanMarkdownSnippet(item.lineContent);
+
       if (item.filePath === targetFilePath) {
-        scrollToLineContent(item.lineContent);
+        scrollToLineContent(cleanedSnippet, currentQuery);
       } else {
-        const querySnippet = encodeURIComponent(item.lineContent.slice(0, 30));
-        window.location.href = `viewer.html?file=${encodeURIComponent(item.filePath)}&q=${querySnippet}`;
+        const params = new URLSearchParams();
+        params.set("file", item.filePath);
+        if (currentQuery) params.set("q", currentQuery);
+        if (cleanedSnippet) params.set("snippet", cleanedSnippet.slice(0, 45));
+        window.location.href = `viewer.html?${params.toString()}`;
       }
     }
 
-    function scrollToLineContent(snippet) {
-      if (!snippet) return;
-      const cleanSnippet = snippet.replace(/^[#\-*>\s]+/, "").trim().slice(0, 35).toLowerCase();
-      if (!cleanSnippet) return;
+    function scrollToLineContent(snippet, fallbackTerm) {
+      if (!snippet && !fallbackTerm) return false;
 
-      const elements = document.querySelectorAll("h1, h2, h3, h4, p, li, blockquote, pre");
-      for (const el of elements) {
-        if (el.textContent.toLowerCase().includes(cleanSnippet)) {
-          // Uncollapse parent section if closed
-          const parentSection = el.closest(".collapsible-section");
-          if (parentSection && !parentSection.classList.contains("open")) {
-            parentSection.classList.add("open");
-            const h2 = parentSection.querySelector("h2.collapsible-heading");
-            if (h2) h2.setAttribute("aria-expanded", "true");
+      const clean = cleanMarkdownSnippet(snippet).toLowerCase();
+      // Candidate search phrases from specific to broader
+      const candidateNeedles = [];
+      if (clean.length > 35) candidateNeedles.push(clean.slice(0, 35));
+      if (clean.length > 20) candidateNeedles.push(clean.slice(0, 20));
+      if (clean) candidateNeedles.push(clean);
+      if (fallbackTerm && fallbackTerm.trim()) candidateNeedles.push(fallbackTerm.trim().toLowerCase());
+
+      const elements = Array.from(document.querySelectorAll(".markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body p, .markdown-body li, .markdown-body blockquote, .markdown-body pre"));
+
+      for (const needle of candidateNeedles) {
+        if (!needle || needle.length < 2) continue;
+
+        for (const el of elements) {
+          const text = el.textContent.toLowerCase();
+          if (text.includes(needle)) {
+            // 1. Uncollapse parent section if closed
+            const parentSection = el.closest(".collapsible-section");
+            if (parentSection && !parentSection.classList.contains("open")) {
+              parentSection.classList.add("open");
+              const h2 = parentSection.querySelector("h2.collapsible-heading");
+              if (h2) h2.setAttribute("aria-expanded", "true");
+            }
+
+            // 2. Uncollapse parent question if closed
+            const parentQuestion = el.closest(".collapsible-question");
+            if (parentQuestion && !parentQuestion.classList.contains("open")) {
+              parentQuestion.classList.add("open");
+              const h3 = parentQuestion.querySelector("h3.collapsible-heading");
+              if (h3) h3.setAttribute("aria-expanded", "true");
+            }
+
+            // 3. Uncollapse parent code block if inside one
+            const parentCodeWrapper = el.closest(".code-block-wrapper");
+            if (parentCodeWrapper && !parentCodeWrapper.classList.contains("open")) {
+              parentCodeWrapper.classList.add("open");
+            }
+
+            // 4. Smooth scroll to element ensuring sticky header clearance
+            const headerEl = document.querySelector("header");
+            const headerHeight = headerEl ? headerEl.offsetHeight : 60;
+            const targetTop = el.getBoundingClientRect().top + window.pageYOffset - (headerHeight + 28);
+            window.scrollTo({
+              top: Math.max(0, targetTop),
+              behavior: "smooth"
+            });
+
+            // 5. Highlight matching element with pulsing outline animation
+            el.classList.remove("search-target-highlight");
+            void el.offsetWidth; // trigger reflow
+            el.classList.add("search-target-highlight");
+
+            return true;
           }
-
-          // Uncollapse parent question if closed
-          const parentQuestion = el.closest(".collapsible-question");
-          if (parentQuestion && !parentQuestion.classList.contains("open")) {
-            parentQuestion.classList.add("open");
-            const h3 = parentQuestion.querySelector("h3.collapsible-heading");
-            if (h3) h3.setAttribute("aria-expanded", "true");
-          }
-
-          // Uncollapse parent code block if inside one
-          const parentCodeWrapper = el.closest(".code-block-wrapper");
-          if (parentCodeWrapper && !parentCodeWrapper.classList.contains("open")) {
-            parentCodeWrapper.classList.add("open");
-          }
-
-          scrollToHeading(el);
-          return;
         }
       }
+
+      return false;
     }
 
     function updateSelectedSpotlightItem() {
