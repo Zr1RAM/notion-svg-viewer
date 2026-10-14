@@ -72,6 +72,38 @@ export function slugify(str: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+const LANG_METADATA: Record<string, { name: string; color: string; bg: string; border: string }> = {
+  javascript: { name: "JavaScript", color: "#f7df1e", bg: "rgba(247, 223, 30, 0.12)", border: "rgba(247, 223, 30, 0.35)" },
+  js: { name: "JavaScript", color: "#f7df1e", bg: "rgba(247, 223, 30, 0.12)", border: "rgba(247, 223, 30, 0.35)" },
+  typescript: { name: "TypeScript", color: "#3178c6", bg: "rgba(49, 120, 198, 0.15)", border: "rgba(49, 120, 198, 0.35)" },
+  ts: { name: "TypeScript", color: "#3178c6", bg: "rgba(49, 120, 198, 0.15)", border: "rgba(49, 120, 198, 0.35)" },
+  jsx: { name: "React JSX", color: "#61dafb", bg: "rgba(97, 218, 251, 0.12)", border: "rgba(97, 218, 251, 0.35)" },
+  tsx: { name: "React TSX", color: "#61dafb", bg: "rgba(97, 218, 251, 0.12)", border: "rgba(97, 218, 251, 0.35)" },
+  html: { name: "HTML", color: "#f16529", bg: "rgba(241, 101, 41, 0.12)", border: "rgba(241, 101, 41, 0.35)" },
+  css: { name: "CSS", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.35)" },
+  json: { name: "JSON", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.12)", border: "rgba(245, 158, 11, 0.35)" },
+  python: { name: "Python", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.35)" },
+  py: { name: "Python", color: "#38bdf8", bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.35)" },
+  bash: { name: "Bash", color: "#00ff88", bg: "rgba(0, 255, 136, 0.12)", border: "rgba(0, 255, 136, 0.35)" },
+  sh: { name: "Shell", color: "#00ff88", bg: "rgba(0, 255, 136, 0.12)", border: "rgba(0, 255, 136, 0.35)" },
+  shell: { name: "Shell", color: "#00ff88", bg: "rgba(0, 255, 136, 0.12)", border: "rgba(0, 255, 136, 0.35)" },
+  sql: { name: "SQL", color: "#c084fc", bg: "rgba(192, 132, 252, 0.12)", border: "rgba(192, 132, 252, 0.35)" },
+  java: { name: "Java", color: "#f89820", bg: "rgba(248, 152, 32, 0.12)", border: "rgba(248, 152, 32, 0.35)" },
+  yaml: { name: "YAML", color: "#f43f5e", bg: "rgba(244, 63, 94, 0.12)", border: "rgba(244, 63, 94, 0.35)" },
+  yml: { name: "YAML", color: "#f43f5e", bg: "rgba(244, 63, 94, 0.12)", border: "rgba(244, 63, 94, 0.35)" },
+};
+
+function preprocessCallouts(md: string): string {
+  const alertRegex = /^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:\s*([^\n]*))?/gim;
+  return md
+    .replace(alertRegex, (match, type, title) => {
+      const lowerType = type.toLowerCase();
+      const displayTitle = title ? title.trim() : type;
+      return `\n<div class="alert-callout ${lowerType}"><div class="alert-title">${displayTitle}</div>\n`;
+    })
+    .replace(/<\/div>\n\n(?=[^>])/g, "</div>\n");
+}
+
 // Custom marked renderer for syntax highlighting & IDs
 marked.setOptions({
   gfm: true,
@@ -289,6 +321,50 @@ export function getDiagramData(diagramId: string): DiagramContent | null {
 }
 
 /**
+ * Wraps H2 headings in collapsible sections and H3 headings in collapsible questions
+ */
+function wrapSectionsAndQuestions(html: string): string {
+  const parts = html.split(/(<h[23][^>]*>[\s\S]*?<\/h[23]>)/gi);
+  let out = "";
+  let inSection = false;
+  let inQuestion = false;
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (/^<h2/i.test(part)) {
+      if (inQuestion) {
+        out += "</div></div>"; // close question-body and question
+        inQuestion = false;
+      }
+      if (inSection) {
+        out += "</div></section>"; // close section-body and section
+        inSection = false;
+      }
+      out += `<section class="collapsible-section open">${part}<div class="section-body">`;
+      inSection = true;
+    } else if (/^<h3/i.test(part)) {
+      if (inQuestion) {
+        out += "</div></div>"; // close previous question-body and question
+        inQuestion = false;
+      }
+      out += `<div class="collapsible-question open">${part}<div class="question-body">`;
+      inQuestion = true;
+    } else {
+      out += part;
+    }
+  }
+
+  if (inQuestion) {
+    out += "</div></div>";
+  }
+  if (inSection) {
+    out += "</div></section>";
+  }
+
+  return out;
+}
+
+/**
  * Loads Doc Data
  */
 export function getDocData(slugParts: string[]): DocContent | null {
@@ -332,40 +408,88 @@ export function getDocData(slugParts: string[]): DocContent | null {
   const readingTime = `${Math.ceil(wordCount / 200)} min read`;
 
   const headings: HeadingItem[] = [];
-  const lines = rawMarkdown.split("\n");
-  for (const line of lines) {
-    const match = line.match(/^(#{1,4})\s+(.+)$/);
-    if (match) {
-      const level = match[1].length;
-      const text = match[2].trim();
-      const id = slugify(text);
-      headings.push({ id, text, level });
-    }
-  }
+  const idCounts = new Map<string, number>();
 
   // Configure marked with syntax highlighting
   const renderer = new marked.Renderer();
   renderer.code = function ({ text, lang }: { text: string; lang?: string }) {
-    const language = lang && hljs.getLanguage(lang) ? lang : "plaintext";
+    const rawLang = (lang || "").toLowerCase().trim();
+    const language = rawLang && hljs.getLanguage(rawLang) ? rawLang : "plaintext";
     const highlighted = hljs.highlight(text, { language }).value;
-    return `<div class="code-block-wrapper relative group my-4">
-      <div class="code-block-header flex items-center justify-between px-4 py-1.5 text-xs font-mono bg-[#1a1e27] text-gray-400 border border-b-0 border-[#272d3b] rounded-t-lg">
-        <span>${language}</span>
-        <button class="copy-code-btn text-gray-400 hover:text-white transition-colors" data-code="${encodeURIComponent(text)}">Copy</button>
+    const lineCount = text.trim().split("\n").length;
+
+    const langMeta = LANG_METADATA[rawLang] || {
+      name: rawLang ? rawLang.toUpperCase() : "Code",
+      color: "var(--accent-blue)",
+      bg: "rgba(56, 189, 248, 0.1)",
+      border: "rgba(56, 189, 248, 0.25)",
+    };
+
+    return `<div class="code-block-wrapper open" style="border-left: 3px solid ${langMeta.color};">
+      <div class="code-block-header" title="Click to collapse / expand code block">
+        <div class="code-header-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="code-chevron" style="color:${langMeta.color};">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+          <span class="code-lang-label" style="color:${langMeta.color}; background:${langMeta.bg}; border: 1px solid ${langMeta.border};">${langMeta.name}</span>
+          <span class="code-line-count">${lineCount} ${lineCount === 1 ? "line" : "lines"}</span>
+        </div>
+        <div class="code-header-actions">
+          <button class="code-action-btn copy-code-btn" data-code="${encodeURIComponent(text)}" title="Copy code to clipboard">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy</span>
+          </button>
+          <button class="code-action-btn btn-toggle-code" title="Toggle code visibility">
+            <span>Collapse</span>
+          </button>
+        </div>
       </div>
-      <pre class="!mt-0 !rounded-t-none"><code class="hljs language-${language}">${highlighted}</code></pre>
+      <div class="code-block-body">
+        <pre><code class="hljs language-${language}">${highlighted}</code></pre>
+      </div>
     </div>`;
   };
 
   renderer.heading = function ({ text, depth }: { text: string; depth: number }) {
-    const id = slugify(text.replace(/<[^>]+>/g, ""));
+    const cleanText = text.replace(/<[^>]+>/g, "").trim();
+    const baseSlug = slugify(cleanText) || `heading-${depth}`;
+    const count = idCounts.get(baseSlug) || 0;
+    idCounts.set(baseSlug, count + 1);
+    const id = count === 0 ? baseSlug : `${baseSlug}-${count}`;
+
+    // Collect into headings outline (levels 1-3 for doc overview, sections, questions)
+    if (depth <= 3) {
+      headings.push({ id, text: cleanText, level: depth });
+    }
+
+    const chevronSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="heading-chevron"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+
+    if (depth === 2) {
+      return `<h2 id="${id}" class="collapsible-heading group" aria-expanded="true" title="Click to toggle section">
+        ${chevronSvg}
+        <span class="heading-text">${text}</span>
+        <a href="#${id}" class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-hub-blue text-sm ml-2 self-center heading-anchor">#</a>
+      </h2>`;
+    }
+    if (depth === 3) {
+      return `<h3 id="${id}" class="collapsible-heading group" aria-expanded="true" title="Click to toggle answer">
+        ${chevronSvg}
+        <span class="heading-text">${text}</span>
+        <a href="#${id}" class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-hub-blue text-sm ml-2 self-center heading-anchor">#</a>
+      </h3>`;
+    }
     return `<h${depth} id="${id}" class="group flex items-center gap-2">
       <span>${text}</span>
-      <a href="#${id}" class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-hub-blue text-sm">#</a>
+      <a href="#${id}" class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-hub-blue text-sm ml-2">#</a>
     </h${depth}>`;
   };
 
-  const html = marked.parse(rawMarkdown, { renderer }) as string;
+  const preprocessedMarkdown = preprocessCallouts(rawMarkdown);
+  const rawHtml = marked.parse(preprocessedMarkdown, { renderer }) as string;
+  const html = wrapSectionsAndQuestions(rawHtml);
 
   const fileName = path.basename(targetFile);
   const title = formatTitle(fileName);

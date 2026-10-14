@@ -85,6 +85,252 @@ g.diagram-node.is-dimmed {
   filter: grayscale(0.5);
 }
 
+/* Collapsible Sections & Questions */
+.collapsible-section {
+  margin-bottom: 32px;
+}
+.collapsible-section:not(.open) > .section-body {
+  display: none !important;
+}
+.collapsible-question {
+  margin: 18px 0;
+  padding-left: 14px;
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s;
+}
+.collapsible-question:hover {
+  border-left-color: rgba(168, 85, 247, 0.45);
+}
+.collapsible-question:not(.open) > .question-body {
+  display: none !important;
+}
+
+/* Table of Contents Custom Glowing Purple Scrollbar (Legacy Match) */
+.toc-sidebar,
+.toc-sidebar nav,
+.toc-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.35) rgba(0, 0, 0, 0.2);
+}
+
+.toc-sidebar::-webkit-scrollbar,
+.toc-sidebar nav::-webkit-scrollbar,
+.toc-scroll-area::-webkit-scrollbar {
+  width: 5px;
+}
+
+.toc-sidebar::-webkit-scrollbar-track,
+.toc-sidebar nav::-webkit-scrollbar-track,
+.toc-scroll-area::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin: 6px 0;
+}
+
+.toc-sidebar::-webkit-scrollbar-thumb,
+.toc-sidebar nav::-webkit-scrollbar-thumb,
+.toc-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.toc-sidebar::-webkit-scrollbar-thumb:hover,
+.toc-sidebar nav::-webkit-scrollbar-thumb:hover,
+.toc-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-purple);
+}
+.collapsible-heading {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  transition: color 0.2s;
+}
+.collapsible-heading:hover {
+  color: var(--accent-purple);
+}
+.heading-chevron {
+  width: 18px;
+  height: 18px;
+  margin-top: 4px;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
+  color: var(--text-muted);
+}
+.collapsible-section.open > .collapsible-heading .heading-chevron,
+.collapsible-question.open > .collapsible-heading .heading-chevron {
+  transform: rotate(90deg);
+  color: var(--accent-purple);
+}
+.collapsible-section:not(.open) > .collapsible-heading .heading-chevron,
+.collapsible-question:not(.open) > .collapsible-heading .heading-chevron {
+  transform: rotate(0deg);
+  color: var(--text-muted);
+}
+
+/* Collapsible Code Blocks */
+.code-block-wrapper {
+  position: relative;
+  background: #090a0f;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  margin: 18px 0;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.code-block-wrapper:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.code-block-header:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+.code-header-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+}
+.code-chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.code-block-wrapper.open .code-chevron {
+  transform: rotate(90deg);
+  color: var(--accent-purple);
+}
+.code-block-wrapper:not(.open) .code-chevron {
+  transform: rotate(0deg);
+  color: var(--text-muted);
+}
+.code-lang-label {
+  text-transform: uppercase;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.code-line-count {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+.code-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.code-action-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.code-action-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.code-block-body {
+  position: relative;
+}
+.code-block-wrapper:not(.open) .code-block-body {
+  display: none;
+}
+.code-block-wrapper:not(.open) .code-block-header {
+  border-bottom: none;
+}
+
+/* Callout Alerts (GitHub / Obsidian style) */
+.alert-callout {
+  border-left: 4px solid var(--accent-blue);
+  background: rgba(56, 189, 248, 0.08);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  margin: 20px 0;
+}
+.alert-callout.note {
+  border-color: var(--accent-blue);
+  background: rgba(56, 189, 248, 0.08);
+}
+.alert-callout.tip {
+  border-color: var(--accent-green);
+  background: rgba(0, 255, 136, 0.08);
+}
+.alert-callout.important {
+  border-color: var(--accent-purple);
+  background: rgba(168, 85, 247, 0.08);
+}
+.alert-callout.warning {
+  border-color: var(--accent-amber);
+  background: rgba(245, 158, 11, 0.08);
+}
+.alert-callout.caution {
+  border-color: var(--accent-red);
+  background: rgba(239, 68, 68, 0.08);
+}
+.alert-title {
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.alert-callout.note .alert-title { color: var(--accent-blue); }
+.alert-callout.tip .alert-title { color: var(--accent-green); }
+.alert-callout.important .alert-title { color: var(--accent-purple); }
+.alert-callout.warning .alert-title { color: var(--accent-amber); }
+.alert-callout.caution .alert-title { color: var(--accent-red); }
+
+/* Target Pulse / Highlight */
+.search-target-highlight {
+  animation: searchTargetPulse 2.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  border-radius: 6px;
+}
+@keyframes searchTargetPulse {
+  0% {
+    background-color: rgba(245, 158, 11, 0.4);
+    outline: 2px solid var(--accent-amber);
+  }
+  65% {
+    background-color: rgba(245, 158, 11, 0.15);
+    outline: 2px solid rgba(245, 158, 11, 0.3);
+  }
+  100% {
+    background-color: transparent;
+    outline: 2px solid transparent;
+  }
+}
+
 /* Markdown typography and atom-one-dark code highlighting styles */
 .markdown-body {
   color: var(--text-primary);
@@ -101,6 +347,7 @@ g.diagram-node.is-dimmed {
   margin-top: 1.8em;
   margin-bottom: 0.6em;
   line-height: 1.3;
+  scroll-margin-top: 84px;
 }
 
 .markdown-body h1 {
@@ -113,10 +360,19 @@ g.diagram-node.is-dimmed {
   font-size: 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding-bottom: 0.3em;
+  color: var(--accent-blue);
 }
 
 .markdown-body h3 {
   font-size: 1.2rem;
+  color: #fff;
+}
+
+.markdown-body h4 {
+  font-size: 0.95rem;
+  color: var(--accent-green);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .markdown-body p,
@@ -135,12 +391,11 @@ g.diagram-node.is-dimmed {
 }
 
 .markdown-body blockquote {
-  border-left: 3px solid var(--accent-blue);
-  background: rgba(56, 189, 248, 0.08);
-  padding: 10px 16px;
-  border-radius: 0 8px 8px 0;
-  margin: 1.2em 0;
-  color: #cbd5e1;
+  border-left: 3px solid var(--border-hover);
+  padding-left: 16px;
+  color: var(--text-secondary);
+  margin: 16px 0;
+  font-style: italic;
 }
 
 .markdown-body code:not(pre code) {
@@ -154,13 +409,31 @@ g.diagram-node.is-dimmed {
 }
 
 .markdown-body pre {
-  background: #14171f !important;
+  background: #090a0f !important;
   border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 14px 16px;
-  margin: 1.2em 0;
+  margin: 0;
   overflow-x: auto;
   position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.3) rgba(0, 0, 0, 0.2);
+}
+
+.markdown-body pre::-webkit-scrollbar {
+  height: 5px;
+}
+.markdown-body pre::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+.markdown-body pre::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.markdown-body pre::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
 }
 
 .markdown-body pre code {
@@ -202,7 +475,7 @@ pre code.hljs {
 }
 .hljs {
   color: #abb2bf;
-  background: #14171f;
+  background: #090a0f;
 }
 .hljs-comment,
 .hljs-quote {
