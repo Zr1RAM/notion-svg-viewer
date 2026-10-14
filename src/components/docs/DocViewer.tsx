@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { DocContent, HeadingItem } from "@/lib/content";
+import { SpotlightModal } from "./SpotlightModal";
 import {
   Clock,
   FileText,
@@ -14,6 +15,7 @@ import {
   ArrowUp,
   ChevronsUpDown,
   Copy,
+  Search,
 } from "lucide-react";
 
 interface DocViewerProps {
@@ -29,14 +31,17 @@ interface TocGroup {
 }
 
 export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const isEmbed = embedMode || searchParams?.get("embed") === "true";
+
   const [activeHeading, setActiveHeading] = useState<string>("");
   const [readingProgress, setReadingProgress] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedRaw, setCopiedRaw] = useState(false);
   const [allExpanded, setAllExpanded] = useState(true);
   const [collapsedTocSections, setCollapsedTocSections] = useState<Record<string, boolean>>({});
+  const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
 
   const articleRef = useRef<HTMLElement>(null);
 
@@ -70,6 +75,226 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
     }
     return groups;
   }, [doc.headings]);
+
+  // Global Ctrl+P / Cmd+P hotkey & custom event listener to open scoped Spotlight Search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault(); // suppress browser print dialog
+        setIsSpotlightOpen((prev) => !prev);
+      }
+    };
+
+    const handleOpenSpotlight = () => setIsSpotlightOpen(true);
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("open-spotlight", handleOpenSpotlight);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("open-spotlight", handleOpenSpotlight);
+    };
+  }, []);
+
+  // Helper to scroll to a specific text snippet and trigger pulse highlight after scroll arrival
+  const scrollToSnippet = useCallback((snippet: string): boolean => {
+    if (!snippet) return false;
+    const container = articleRef.current;
+    if (!container) return false;
+
+    // Clean any markdown syntax markers from snippet for clean textContent matching
+    const cleanSnippet = snippet
+      .replace(/^#{1,6}\s+/, "")
+      .replace(/^>\s*/, "")
+      .replace(/^[-*+]\s+\[[ x]\]\s*/i, "")
+      .replace(/^[-*+]\s+/, "")
+      .replace(/^\d+\.\s+/, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // [text](url) -> text
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1") // ![alt](url) -> alt
+      .replace(/<[^>]+>/g, "") // strip inline html tags
+      .replace(/[`*_~]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+
+    if (!cleanSnippet) return false;
+
+    // Search strictly within content elements (exclude section/question container divs)
+    const contentCandidates = Array.from(
+      container.querySelectorAll(
+        "h1, h2, h3, h4, h5, h6, p, li, pre, code, tr, td, th, blockquote, dt, dd"
+      )
+    ) as HTMLElement[];
+
+    let targetEl: HTMLElement | null = null;
+
+    // Helper: given a list of matching elements, pick the deepest / leaf-most element
+    const pickLeafMatch = (elements: HTMLElement[]): HTMLElement | null => {
+      if (elements.length === 0) return null;
+      // Filter out elements that contain another matching element (keep leaves only)
+      const leafElements = elements.filter(
+        (el) => !elements.some((other) => other !== el && el.contains(other))
+      );
+      return leafElements[0] || elements[0];
+    };
+
+    // 1. Exact cleaned line match (normalized whitespace)
+    const exactMatches = contentCandidates.filter((el) => {
+      const tc = (el.textContent || "").toLowerCase().replace(/\s+/g, " ");
+      return tc.includes(cleanSnippet);
+    });
+    targetEl = pickLeafMatch(exactMatches);
+
+    // 2. Prefix match (first 30 characters)
+    if (!targetEl && cleanSnippet.length > 25) {
+      const prefix = cleanSnippet.slice(0, 30);
+      const prefixMatches = contentCandidates.filter((el) => {
+        const tc = (el.textContent || "").toLowerCase().replace(/\s+/g, " ");
+        return tc.includes(prefix);
+      });
+      targetEl = pickLeafMatch(prefixMatches);
+    }
+
+    // 3. Significant keywords match (words longer than 3 chars)
+    if (!targetEl) {
+      const words = cleanSnippet
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter((w) => w.length > 3)
+        .slice(0, 5);
+
+      if (words.length > 0) {
+        const wordMatches = contentCandidates.filter((el) => {
+          const tc = (el.textContent || "").toLowerCase();
+          return words.every((w) => tc.includes(w));
+        });
+        targetEl = pickLeafMatch(wordMatches);
+      }
+    }
+
+    // Fallback: if not found in contentCandidates, search all non-container elements
+    if (!targetEl) {
+      const allElements = Array.from(container.querySelectorAll("*")) as HTMLElement[];
+      const fallbackMatches = allElements.filter((el) => {
+        if (
+          el.classList.contains("collapsible-section") ||
+          el.classList.contains("section-body") ||
+          el.classList.contains("collapsible-question") ||
+          el.classList.contains("question-body")
+        ) {
+          return false;
+        }
+        const tc = (el.textContent || "").toLowerCase().replace(/\s+/g, " ");
+        return tc.includes(cleanSnippet);
+      });
+      targetEl = pickLeafMatch(fallbackMatches);
+    }
+
+    if (!targetEl) return false;
+
+    // Identify the best block element to scroll to and highlight (clean container wrapping text)
+    const blockEl =
+      (targetEl.closest(
+        "p, li, h1, h2, h3, h4, h5, h6, pre, tr, td, blockquote"
+      ) as HTMLElement | null) || targetEl;
+
+    // Detect if this snippet is within a Question & Answer card
+    const questionEl = targetEl.closest(".collapsible-question") as HTMLElement | null;
+
+    // Uncollapse all ancestor collapsible sections, questions, and code blocks
+    let cur: HTMLElement | null = blockEl;
+    while (cur && cur !== container) {
+      if (cur.classList.contains("collapsible-section") && !cur.classList.contains("open")) {
+        cur.classList.add("open");
+        const h2 = cur.querySelector("h2.collapsible-heading");
+        if (h2) h2.setAttribute("aria-expanded", "true");
+      }
+      if (cur.classList.contains("collapsible-question") && !cur.classList.contains("open")) {
+        cur.classList.add("open");
+        const h3 = cur.querySelector("h3.collapsible-heading");
+        if (h3) h3.setAttribute("aria-expanded", "true");
+      }
+      if (cur.classList.contains("code-block-wrapper") && !cur.classList.contains("open")) {
+        cur.classList.add("open");
+        const toggleSpan = cur.querySelector(".btn-toggle-code span");
+        if (toggleSpan) toggleSpan.textContent = "Collapse";
+      }
+      cur = cur.parentElement;
+    }
+
+    // Force DOM layout reflow so element coordinates are accurate following expansion
+    void container.offsetHeight;
+
+    // Function to trigger the glowing highlight across the entire question & answer card
+    const triggerHighlight = () => {
+      container.querySelectorAll(".search-target-highlight, .search-line-highlight").forEach((el) => {
+        el.classList.remove("search-target-highlight", "search-line-highlight");
+      });
+
+      if (questionEl) {
+        // Illuminate the entire question & answer div with glowing background and border
+        void questionEl.offsetWidth; // trigger reflow
+        questionEl.classList.add("search-target-highlight");
+
+        // Also mark the specific matching line within the answer for pinpoint precision
+        if (blockEl && blockEl !== questionEl) {
+          blockEl.classList.add("search-line-highlight");
+        }
+      } else {
+        void blockEl.offsetWidth;
+        blockEl.classList.add("search-target-highlight");
+      }
+    };
+
+    // Determine element to scroll into view: center the whole question card if it fits, else the specific line
+    const scrollTarget =
+      questionEl && questionEl.offsetHeight < window.innerHeight * 0.85
+        ? questionEl
+        : blockEl;
+
+    // Apply highlight immediately so it is already glowing during scroll and stays lit
+    triggerHighlight();
+
+    // Smoothly scroll to center the element in the viewport
+    scrollTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    return true;
+  }, []);
+
+  // Check for cross-page jump snippet in sessionStorage on load (with retry for DOM paint)
+  useEffect(() => {
+    const jumpSnippet = sessionStorage.getItem("spotlight_jump_snippet");
+    if (jumpSnippet) {
+      sessionStorage.removeItem("spotlight_jump_snippet");
+      let attempts = 0;
+      const tryScroll = () => {
+        const found = scrollToSnippet(jumpSnippet);
+        attempts++;
+        if (!found && attempts < 5) {
+          setTimeout(tryScroll, 120);
+        }
+      };
+      setTimeout(tryScroll, 80);
+    }
+  }, [doc.html, scrollToSnippet]);
+
+  // Handle result selection from Spotlight search modal
+  const handleSelectSearchResult = (url: string, snippetText: string) => {
+    setIsSpotlightOpen(false);
+
+    if (typeof window !== "undefined") {
+      const currentPath = window.location.pathname.replace(/\/$/, "").toLowerCase();
+      const targetPath = url.replace(/\/$/, "").toLowerCase();
+
+      if (currentPath === targetPath) {
+        // Same page: do NOT reload or navigate, immediately scroll and highlight
+        scrollToSnippet(snippetText);
+      } else {
+        // Different page: navigate to target page and carry snippet
+        sessionStorage.setItem("spotlight_jump_snippet", snippetText);
+        router.push(url);
+      }
+    }
+  };
 
   // Scroll spy & reading progress
   useEffect(() => {
@@ -218,7 +443,6 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
     // Sync TOC section expansion
     const newCollapsedMap: Record<string, boolean> = {};
     if (!next) {
-      // If collapsing all, collapse all TOC groups
       tocGroups.forEach((g) => {
         newCollapsedMap[g.id] = true;
       });
@@ -260,6 +484,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
     e.preventDefault();
     const targetEl = document.getElementById(id);
     if (!targetEl) return;
+    const container = articleRef.current;
 
     // Uncollapse parent section in article if closed
     const parentSection = targetEl.closest(".collapsible-section");
@@ -277,16 +502,28 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       if (h3) h3.setAttribute("aria-expanded", "true");
     }
 
-    const headerOffset = 90;
-    const elementPosition = targetEl.getBoundingClientRect().top + window.pageYOffset;
-    window.scrollTo({
-      top: Math.max(0, elementPosition - headerOffset),
-      behavior: "smooth",
-    });
+    if (container) void container.offsetHeight;
 
-    targetEl.classList.remove("search-target-highlight");
-    void targetEl.offsetWidth; // trigger reflow
-    targetEl.classList.add("search-target-highlight");
+    const questionEl = targetEl.closest(".collapsible-question") as HTMLElement | null;
+    const highlightTarget = questionEl || targetEl;
+
+    const triggerHighlight = () => {
+      if (container) {
+        container.querySelectorAll(".search-target-highlight, .search-line-highlight").forEach((el) => {
+          el.classList.remove("search-target-highlight", "search-line-highlight");
+        });
+      }
+      void highlightTarget.offsetWidth;
+      highlightTarget.classList.add("search-target-highlight");
+    };
+
+    const scrollTarget =
+      questionEl && questionEl.offsetHeight < window.innerHeight * 0.85
+        ? questionEl
+        : targetEl;
+
+    triggerHighlight();
+    scrollTarget.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
   return (
@@ -296,6 +533,17 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
         className="fixed top-0 left-0 h-0.5 bg-hub-green z-50 transition-all duration-150"
         style={{ width: `${readingProgress}%` }}
       />
+
+      {/* Scoped Spotlight Search Modal */}
+      {doc.folderDocs && doc.folderDocs.length > 0 && (
+        <SpotlightModal
+          isOpen={isSpotlightOpen}
+          onClose={() => setIsSpotlightOpen(false)}
+          folderName={doc.subfolder || doc.category}
+          folderDocs={doc.folderDocs}
+          onSelectResult={handleSelectSearchResult}
+        />
+      )}
 
       <div className={`max-w-7xl mx-auto px-4 sm:px-8 py-8 ${isEmbed ? "!max-w-none !p-4" : ""}`}>
         {/* Flex layout: Table of Contents on LEFT, Main Article on RIGHT */}
@@ -402,7 +650,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
             {/* Header info card */}
             <div className="bg-hub-card border border-hub-border rounded-2xl p-6 sm:p-8 mb-8 shadow-xl">
               <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                <div className="flex items-center gap-2 text-xs font-semibold text-hub-secondary">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-hub-secondary">
                   <span className="text-hub-blue">{doc.category}</span>
                   {doc.subfolder && (
                     <>
@@ -410,6 +658,8 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
                       <span>{doc.subfolder}</span>
                     </>
                   )}
+                  <ChevronRight className="w-3.5 h-3.5 text-hub-muted" />
+                  <span className="text-white font-medium">{doc.title}</span>
                 </div>
 
                 {/* Header Action Buttons */}

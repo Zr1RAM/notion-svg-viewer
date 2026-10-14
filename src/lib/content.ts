@@ -116,6 +116,20 @@ export interface HeadingItem {
   level: number;
 }
 
+export interface ScopedDocLine {
+  lineNum: number;
+  text: string;
+}
+
+export interface ScopedDocRecord {
+  title: string;
+  fileName: string;
+  slug: string;
+  url: string;
+  isReadme: boolean;
+  lines: ScopedDocLine[];
+}
+
 export interface DocContent {
   title: string;
   category: string;
@@ -125,6 +139,7 @@ export interface DocContent {
   wordCount: number;
   readingTime: string;
   rawMarkdown: string;
+  folderDocs?: ScopedDocRecord[];
 }
 
 export interface DiagramContent {
@@ -494,6 +509,53 @@ export function getDocData(slugParts: string[]): DocContent | null {
   const fileName = path.basename(targetFile);
   const title = formatTitle(fileName);
 
+  // Scan and index sibling markdown files in the same folder for scoped Spotlight search
+  const targetDir = path.dirname(targetFile);
+  const folderDocs: ScopedDocRecord[] = [];
+  try {
+    const siblingEntries = fs.readdirSync(targetDir);
+    for (const entry of siblingEntries) {
+      if (entry.endsWith(".md")) {
+        const fullEntryPath = path.join(targetDir, entry);
+        const fileContent = fs.readFileSync(fullEntryPath, "utf-8");
+        const fileSlug = slugify(entry.replace(/\.md$/i, ""));
+        const isReadme = entry.toLowerCase().startsWith("readme");
+        const subfolderSlug = subfolderName ? slugify(subfolderName) : undefined;
+        const routeSlug = subfolderSlug
+          ? `${slugify(categoryName)}/${subfolderSlug}/${fileSlug}`
+          : `${slugify(categoryName)}/${fileSlug}`;
+
+        const lines: ScopedDocLine[] = [];
+        const rawLines = fileContent.split("\n");
+        rawLines.forEach((line, idx) => {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed === "---" || trimmed === "***") return;
+          lines.push({
+            lineNum: idx + 1,
+            text: trimmed,
+          });
+        });
+
+        folderDocs.push({
+          title: formatTitle(entry),
+          fileName: entry,
+          slug: fileSlug,
+          url: `/docs/${routeSlug}/`,
+          isReadme,
+          lines,
+        });
+      }
+    }
+
+    folderDocs.sort((a, b) => {
+      if (a.isReadme) return -1;
+      if (b.isReadme) return 1;
+      return a.title.localeCompare(b.title);
+    });
+  } catch (err) {
+    console.warn("Failed to index folder documents for spotlight search:", err);
+  }
+
   return {
     title,
     category: categoryName,
@@ -503,6 +565,7 @@ export function getDocData(slugParts: string[]): DocContent | null {
     wordCount,
     readingTime,
     rawMarkdown,
+    folderDocs,
   };
 }
 

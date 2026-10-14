@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ChevronRight, ExternalLink, Home, Layers, BookOpen, Share2, Check } from "lucide-react";
+import { ChevronRight, ExternalLink, Home, Layers, BookOpen, Share2, Check, Search } from "lucide-react";
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -66,6 +66,22 @@ export const Navbar: React.FC = () => {
                 </React.Fragment>
               );
             })}
+
+            {/* Spotlight Search Trigger button next to file name */}
+            {pathname.startsWith("/docs/") && (
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("open-spotlight"))}
+                title="Search folder documents (Ctrl + P)"
+                className="ml-2 hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-hub-purple/15 hover:bg-hub-purple/25 text-xs font-semibold text-hub-purple hover:text-white border border-hub-purple/35 transition-all flex-shrink-0"
+              >
+                <Search className="w-3 h-3" />
+                <span>Search</span>
+                <kbd className="text-[9px] px-1 py-0.2 rounded bg-black/40 border border-white/10 font-mono text-gray-300">
+                  Ctrl P
+                </kbd>
+              </button>
+            )}
           </div>
         )}
       </div>
