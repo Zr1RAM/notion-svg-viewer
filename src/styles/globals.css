@@ -85,6 +85,43 @@ g.diagram-node.is-dimmed {
   filter: grayscale(0.5);
 }
 
+/* Hub Category Card Accordion Animation (Legacy Match) */
+.hub-folder-submenu {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  opacity: 0;
+}
+.hub-folder-submenu.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.hub-submenu-content {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hub-subfolder-drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  opacity: 0;
+}
+.hub-subfolder-drawer.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.hub-subfolder-content {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 /* Collapsible Sections & Questions */
 .collapsible-section {
   margin-bottom: 32px;

@@ -260,10 +260,18 @@ export const HubView: React.FC<HubViewProps> = ({ categories }) => {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") toggleCard(category.slug);
                   }}
-                  className="flex items-center justify-between cursor-pointer select-none pb-4 border-b border-hub-border/60 group"
+                  className={`flex items-center justify-between cursor-pointer select-none group transition-all duration-200 ${
+                    isOpen ? "pb-4 border-b border-hub-border/60" : "pb-0 border-b border-transparent"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-hub-blue group-hover:scale-105 transition-transform">
+                    <div
+                      className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all duration-200 group-hover:scale-105 ${
+                        isOpen
+                          ? "bg-hub-green/10 border-hub-green/30 text-hub-green"
+                          : "bg-white/5 border-white/10 text-hub-blue"
+                      }`}
+                    >
                       {isOpen ? <FolderOpen className="w-5 h-5" /> : <Folder className="w-5 h-5" />}
                     </div>
                     <div>
@@ -281,17 +289,17 @@ export const HubView: React.FC<HubViewProps> = ({ categories }) => {
                   </div>
 
                   <div
-                    className={`p-1.5 rounded-lg text-hub-muted group-hover:text-white transition-transform duration-200 ${
-                      isOpen ? "rotate-180" : ""
+                    className={`p-1.5 rounded-lg text-hub-muted group-hover:text-white transition-transform duration-300 ${
+                      isOpen ? "rotate-180 text-hub-green" : ""
                     }`}
                   >
                     <ChevronDown className="w-5 h-5" />
                   </div>
                 </div>
 
-                {/* Category Content */}
-                {isOpen && (
-                  <div className="mt-4 flex flex-col gap-3">
+                {/* Category Content (Smooth Animated Accordion) */}
+                <div className={`hub-folder-submenu ${isOpen ? "open" : ""}`}>
+                  <div className="hub-submenu-content pt-4">
                     {/* Direct Items */}
                     {category.directItems.map(renderItemButton)}
 
@@ -322,24 +330,24 @@ export const HubView: React.FC<HubViewProps> = ({ categories }) => {
                               </span>
                             </div>
                             <div
-                              className={`p-1 text-hub-muted group-hover/sf:text-white transition-transform ${
-                                isSfOpen ? "rotate-180" : ""
+                              className={`p-1 text-hub-muted group-hover/sf:text-white transition-transform duration-250 ${
+                                isSfOpen ? "rotate-180 text-hub-purple" : ""
                               }`}
                             >
                               <ChevronDown className="w-4 h-4" />
                             </div>
                           </div>
 
-                          {isSfOpen && (
-                            <div className="mt-3 flex flex-col gap-2 pl-2 border-l border-white/5">
+                          <div className={`hub-subfolder-drawer ${isSfOpen ? "open" : ""}`}>
+                            <div className="hub-subfolder-content pt-3 pl-2 border-l border-white/5">
                               {sf.items.map(renderItemButton)}
                             </div>
-                          )}
+                          </div>
                         </div>
                       );
                     })}
                   </div>
-                )}
+                </div>
               </div>
             );
           })}
