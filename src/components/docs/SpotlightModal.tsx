@@ -125,7 +125,7 @@ export const SpotlightModal: React.FC<SpotlightModalProps> = ({
 
     return parts.map((part, i) =>
       part.toLowerCase() === queryStr.trim().toLowerCase() ? (
-        <mark key={i} className="spotlight-mark">
+        <mark key={i} className="bg-amber-500/30 text-amber-200 px-1 py-0.5 rounded font-semibold">
           {part}
         </mark>
       ) : (
@@ -138,35 +138,37 @@ export const SpotlightModal: React.FC<SpotlightModalProps> = ({
 
   return (
     <div
-      className="spotlight-backdrop open"
+      className="fixed inset-0 bg-black/85 backdrop-blur-md z-[100] flex items-start justify-center pt-[10vh] px-4 transition-opacity duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="spotlight-dialog"
+        className="bg-[#161b22] border border-white/15 rounded-2xl w-full max-w-[680px] shadow-2xl shadow-black ring-1 ring-hub-purple/30 overflow-hidden flex flex-col transition-transform duration-200"
         role="dialog"
         aria-modal="true"
         aria-label="Spotlight Search"
         onKeyDown={handleKeyDown}
       >
         {/* Input Header */}
-        <div className="spotlight-input-wrapper">
+        <div className="px-4 py-3.5 flex items-center gap-3 border-b border-white/10 bg-white/[0.03]">
           <Search className="w-5 h-5 text-hub-purple flex-shrink-0" />
           <input
             ref={inputRef}
             type="text"
-            className="spotlight-input"
+            className="bg-transparent border-none outline-none text-[15.5px] text-white w-full placeholder:text-hub-muted font-sans"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search README or prep documents in this folder..."
             autoComplete="off"
             spellCheck="false"
           />
-          <span className="spotlight-scope-badge">📁 {folderName}</span>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-hub-purple/15 border border-hub-purple/30 text-hub-purple whitespace-nowrap flex-shrink-0">
+            📁 {folderName}
+          </span>
           <button
             type="button"
-            className="spotlight-close-btn"
+            className="text-hub-muted hover:text-white p-1 rounded-md hover:bg-white/10 transition-colors flex-shrink-0"
             onClick={onClose}
             title="Close (Esc)"
           >
@@ -175,23 +177,31 @@ export const SpotlightModal: React.FC<SpotlightModalProps> = ({
         </div>
 
         {/* Filter Bar */}
-        <div className="spotlight-filter-bar">
-          <span className="spotlight-filter-label">Scope:</span>
+        <div className="flex items-center gap-2 px-4 py-2 bg-[#101318] border-b border-white/5 text-xs">
+          <span className="text-hub-muted text-[11px] uppercase tracking-wider mr-0.5">Scope:</span>
           <button
             type="button"
-            className={`spotlight-pill ${scopeFilter === "readme" ? "active" : ""}`}
+            className={`px-2.5 py-0.5 rounded-full text-[11.5px] transition-colors border font-sans ${
+              scopeFilter === "readme"
+                ? "bg-hub-blue/15 border-hub-blue text-white font-semibold"
+                : "bg-white/[0.04] border-white/10 text-hub-secondary hover:bg-white/10 hover:text-white"
+            }`}
             onClick={() => setScopeFilter("readme")}
           >
             README Only
           </button>
           <button
             type="button"
-            className={`spotlight-pill ${scopeFilter === "all" ? "active" : ""}`}
+            className={`px-2.5 py-0.5 rounded-full text-[11.5px] transition-colors border font-sans ${
+              scopeFilter === "all"
+                ? "bg-hub-blue/15 border-hub-blue text-white font-semibold"
+                : "bg-white/[0.04] border-white/10 text-hub-secondary hover:bg-white/10 hover:text-white"
+            }`}
             onClick={() => setScopeFilter("all")}
           >
             All Docs in Folder
           </button>
-          <span className="spotlight-stats">
+          <span className="ml-auto text-[11.5px] text-hub-muted">
             {query.trim().length >= 2
               ? `${searchResults.length} ${searchResults.length === 1 ? "match" : "matches"}`
               : "Type to search"}
@@ -199,14 +209,14 @@ export const SpotlightModal: React.FC<SpotlightModalProps> = ({
         </div>
 
         {/* Results Container */}
-        <div ref={resultsContainerRef} className="spotlight-results">
+        <div ref={resultsContainerRef} className="max-h-[420px] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-hub-purple/30 scrollbar-track-black/20">
           {query.trim().length < 2 ? (
-            <div className="spotlight-empty">
+            <div className="py-9 px-4 text-center text-hub-muted text-[13.5px]">
               Type at least 2 characters to search across{" "}
               {scopeFilter === "readme" ? "the topic README" : "all files in this folder"}.
             </div>
           ) : searchResults.length === 0 ? (
-            <div className="spotlight-empty">
+            <div className="py-9 px-4 text-center text-hub-muted text-[13.5px]">
               No lines found matching &ldquo;<strong>{query}</strong>&rdquo; in this folder.
             </div>
           ) : (
@@ -216,19 +226,27 @@ export const SpotlightModal: React.FC<SpotlightModalProps> = ({
                 <div
                   key={`${result.url}-${result.lineNum}-${idx}`}
                   data-index={idx}
-                  className={`spotlight-item ${isSelected ? "selected" : ""}`}
+                  className={`p-2.5 rounded-lg mb-1 cursor-pointer transition-all border flex flex-col gap-1 ${
+                    isSelected
+                      ? "bg-hub-purple/15 border-hub-purple/40 translate-x-0.5"
+                      : "border-transparent bg-white/[0.02] hover:bg-hub-purple/10 hover:border-hub-purple/30 hover:translate-x-0.5"
+                  }`}
                   onClick={() => onSelectResult(result.url, result.text)}
                   onMouseEnter={() => setSelectedIndex(idx)}
                 >
-                  <div className="spotlight-item-header">
+                  <div className="flex items-center justify-between gap-2">
                     <span
-                      className={`spotlight-file-badge ${result.isReadme ? "is-readme" : ""}`}
+                      className={`text-[11px] font-semibold px-1.5 py-0.5 rounded border font-mono ${
+                        result.isReadme
+                          ? "text-hub-purple bg-hub-purple/15 border-hub-purple/30"
+                          : "text-hub-green bg-hub-green/10 border-hub-green/25"
+                      }`}
                     >
                       {result.title}
                     </span>
-                    <span className="spotlight-line-num">L{result.lineNum}</span>
+                    <span className="text-[11px] text-hub-muted font-mono">L{result.lineNum}</span>
                   </div>
-                  <div className="spotlight-snippet">
+                  <div className="text-[13px] text-hub-secondary leading-snug truncate">
                     {renderHighlightedText(result.text, query)}
                   </div>
                 </div>
@@ -238,15 +256,16 @@ export const SpotlightModal: React.FC<SpotlightModalProps> = ({
         </div>
 
         {/* Modal Footer Shortcuts */}
-        <div className="spotlight-footer">
-          <div className="spotlight-hint">
-            <span>↑</span> <span>↓</span> Navigate
+        <div className="px-4 py-2 border-t border-white/5 flex items-center gap-4 text-[11.5px] text-hub-muted bg-[#101318]">
+          <div className="flex items-center gap-1">
+            <span className="bg-white/10 border border-white/15 px-1.5 py-0.5 rounded font-mono text-[10.5px] mr-1 text-hub-secondary">↑</span>
+            <span className="bg-white/10 border border-white/15 px-1.5 py-0.5 rounded font-mono text-[10.5px] mr-1 text-hub-secondary">↓</span> Navigate
           </div>
-          <div className="spotlight-hint">
-            <span>↵</span> Open result
+          <div className="flex items-center gap-1">
+            <span className="bg-white/10 border border-white/15 px-1.5 py-0.5 rounded font-mono text-[10.5px] mr-1 text-hub-secondary">↵</span> Open result
           </div>
-          <div className="spotlight-hint">
-            <span>esc</span> Close
+          <div className="flex items-center gap-1">
+            <span className="bg-white/10 border border-white/15 px-1.5 py-0.5 rounded font-mono text-[10.5px] mr-1 text-hub-secondary">esc</span> Close
           </div>
         </div>
       </div>

@@ -4,6 +4,8 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { useSearchParams, useRouter } from "next/navigation";
 import { DocContent, HeadingItem } from "@/lib/content";
 import { SpotlightModal } from "./SpotlightModal";
+import "@/styles/markdown.css";
+import "@/styles/highlight.css";
 import {
   Clock,
   FileText,
@@ -79,7 +81,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
   // Global Ctrl+P / Cmd+P hotkey & custom event listener to open scoped Spotlight Search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+      if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "p" || e.key.toLowerCase() === "k")) {
         e.preventDefault(); // suppress browser print dialog
         setIsSpotlightOpen((prev) => !prev);
       }
