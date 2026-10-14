@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Complete Java Spring Boot Multiservice Master Guide (3-Day Fast-Track)</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* Code styling */
+    pre code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    
+    .nav-item.active {
+      background-color: rgba(59, 130, 246, 0.15);
+      border-left: 3px solid #3b82f6;
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    /* Alert callout styles */
+    .alert-note { border-left: 4px solid #3b82f6; background-color: rgba(30, 58, 138, 0.2); }
+    .alert-tip { border-left: 4px solid #10b981; background-color: rgba(6, 78, 59, 0.2); }
+    .alert-important { border-left: 4px solid #8b5cf6; background-color: rgba(91, 33, 182, 0.2); }
+    .alert-warning { border-left: 4px solid #f59e0b; background-color: rgba(120, 53, 15, 0.2); }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white min-h-screen font-sans">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-blue-600 text-white px-4 py-2.5 rounded-lg shadow-2xl flex items-center gap-2.5 text-sm font-medium border border-blue-400/40">
+    <svg class="w-4 h-4 text-emerald-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+    <span id="toast-message">Copied to clipboard!</span>
+  </div>
+
+  <!-- Floating / Fixed Sidebar Toggle Button -->
+  <button id="toggle-btn" onclick="toggleSidebar()" title="Toggle Navigation Sidebar" 
+    class="fixed top-4 left-4 z-50 p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/80 shadow-2xl backdrop-blur transition-all duration-300 flex items-center gap-2 group hover:border-blue-500">
+    <svg id="toggle-icon-open" class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+    </svg>
+    <span id="toggle-label" class="text-xs font-semibold text-slate-300 pr-1 hidden sm:inline">Menu</span>
+  </button>
+
+  <!-- Sidebar Overlay for mobile -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden transition-opacity lg:hidden"></div>
+
+  <!-- Sidebar Navigation -->
+  <aside id="sidebar" class="w-80 bg-slate-900/95 border-r border-slate-800 fixed top-0 bottom-0 left-0 flex flex-col z-40 shadow-2xl backdrop-blur transform transition-transform duration-300 ease-in-out">
+    <!-- Header -->
+    <div class="p-5 border-b border-slate-800 bg-slate-900 pt-16">
+      <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg text-white shadow-md shadow-blue-500/20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          </div>
+          <div>
+            <h1 class="font-bold text-sm text-white tracking-tight leading-tight">Spring Boot Master</h1>
+            <span class="text-[11px] text-blue-400 font-medium">3-Day Fast-Track</span>
+          </div>
+        </div>
+        <button onclick="toggleSidebar()" class="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition" title="Close Sidebar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <p class="text-xs text-slate-400 mt-1">For Senior 5-Yr Node/Full-Stack Devs</p>
+      
+      <!-- Search Input -->
+      <div class="mt-4 relative">
+        <input id="search-input" type="text" placeholder="Search guides, annotations, code..." 
+          class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors">
+        <svg class="w-3.5 h-3.5 text-slate-500 absolute right-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+
+      <!-- Quick Day Filter Tabs -->
+      <div class="grid grid-cols-3 gap-1.5 mt-3 text-center text-xs font-semibold">
+        <button onclick="filterDay('day1')" class="py-1 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">Day 1</button>
+        <button onclick="filterDay('day2')" class="py-1 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">Day 2</button>
+        <button onclick="filterDay('day3')" class="py-1 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">Day 3</button>
+      </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="flex-1 overflow-y-auto p-3 space-y-0.5 text-xs" id="nav-list">
+      <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">Day 1: Single Service Foundation</div>
+      <a href="#sec-1" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">1. Node.js $\to$ Spring Mental Model</a>
+      <a href="#sec-2" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">2. Environment & Maven pom.xml</a>
+      <a href="#sec-3" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">3. Service Anatomy & Request Lifecycle</a>
+      <a href="#sec-4" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">4. REST APIs, DTOs & Validation</a>
+      <a href="#sec-5" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">5. Spring Data JPA, Hibernate & N+1</a>
+
+      <div class="px-3 pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">Day 2: Multiservice & Event-Driven</div>
+      <a href="#sec-6" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">6. Multiservice Topology Overview</a>
+      <a href="#sec-7" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">7. Spring Cloud API Gateway</a>
+      <a href="#sec-8" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">8. OpenFeign & Resilience4j</a>
+      <a href="#sec-9" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">9. Kafka Event-Driven Messaging</a>
+      <a href="#sec-10" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">10. Distributed Sagas & Outbox Pattern</a>
+
+      <div class="px-3 pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">Day 3: Security, Observability & Ops</div>
+      <a href="#sec-11" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">11. Redis Caching & Distributed Locks</a>
+      <a href="#sec-12" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">12. Spring Security 6 & OAuth2 JWT</a>
+      <a href="#sec-13" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">13. Observability & Distributed Tracing</a>
+      <a href="#sec-14" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">14. Testcontainers Integration Tests</a>
+      <a href="#sec-15" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">15. Docker Multi-Stage & Compose Fleet</a>
+      <a href="#sec-16" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">16. The 3-Day Sprint Roadmap</a>
+      <a href="#sec-17" class="nav-item flex items-center px-3 py-2 rounded-md text-slate-300 hover:bg-slate-800/80 transition">17. Node.js $\to$ Spring Rosetta Dictionary</a>
+    </nav>
+
+    <!-- Footer Status -->
+    <div class="p-3 border-t border-slate-800 bg-slate-900 text-[11px] text-slate-400 flex items-center justify-between">
+      <span>Sprint Progress:</span>
+      <span id="progress-pct" class="text-blue-400 font-bold">0%</span>
+    </div>
+  </aside>
+
+  <!-- Main Content Area Wrapper (Handles Sidebar Offset & Dynamic Centering) -->
+  <div id="main-wrapper" class="transition-all duration-300 ease-in-out lg:pl-80 w-full flex justify-center">
+    <main class="w-full max-w-5xl px-6 py-12 lg:px-12 lg:py-16 min-w-0">
+
+      <!-- Top Hero Header -->
+      <div class="mb-12 pb-8 border-b border-slate-800 pt-6 lg:pt-0">
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30">Node.js to Java 21+ Spring Boot</span>
+          <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">3-Day Fast-Track Blueprint</span>
+          <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/30">Enterprise Production Architecture</span>
+        </div>
+        <h1 class="text-3xl lg:text-4xl font-extrabold text-white tracking-tight">The Complete Java Spring Boot Multiservice Master Guide</h1>
+        <p class="mt-4 text-slate-300 text-sm lg:text-base leading-relaxed">
+          A comprehensive, zero-fluff blueprint designed specifically for senior 5-year full-stack / Node.js developers fast-tracking into Java Spring Boot enterprise microservices roles. Every single concept is mapped directly to its Node/TypeScript equivalent, backed by production-ready code, multi-service architectures, reactive Kafka event loops, and containerization.
+        </p>
+
+        <!-- Interactive Progress Tracker Card -->
+        <div class="mt-6 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
+          <div class="flex items-center justify-between text-xs text-slate-300 mb-2.5 font-medium">
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              Interactive 3-Day Sprint Completion
+            </span>
+            <span id="tracker-text" class="font-mono text-slate-400">0 of 17 modules completed</span>
+          </div>
+          <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+            <div id="progress-bar" class="bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400 h-full w-0 transition-all duration-300"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- SECTION 1 -->
+      <!-- ========================================== -->
+      <section id="sec-1" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">01.</span> Introduction & Node.js $\to$ Spring Boot Mental Model
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(1)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">1.1 The Runtime Shift: V8 Single-Threaded Event Loop vs. JVM & Virtual Threads (Loom)</h3>
+          <p>
+            In <strong>Node.js</strong>, your JavaScript code executes on a <strong>single thread</strong> powered by the V8 engine and the <code>libuv</code> event loop. Asynchronous operations (disk reads, database queries, outbound network requests) are offloaded to OS kernel polling (epoll/kqueue) or the libuv worker threadpool (default 4 threads). Once an I/O task finishes, its callback or promise is pushed to an event queue and placed onto the call stack when the thread is idle:
+          </p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 font-mono text-xs text-blue-300">
+            [ Node.js Request ] ──> Event Loop (Single Thread) ──> Offload I/O ──> Event Queue ──> Callback/Promise
+          </div>
+
+          <p>
+            In <strong>classic Java (Spring Boot 1.x & 2.x)</strong>, the server model was <strong>thread-per-request</strong> backed by OS-level kernel threads managed by an embedded Apache Tomcat pool (default 200 threads). If 200 concurrent requests each performed a 500ms database query, all 200 OS threads were strictly blocked waiting for network packets. Because an OS thread carries a heavy memory footprint (~1MB stack size) and incurs high CPU context-switching overhead, scaling to 10,000+ concurrent requests required complex reactive programming (Spring WebFlux / Project Reactor), which introduced callback complexity similar to early Node.js callback hell.
+          </p>
+
+          <p>
+            In modern <strong>Spring Boot 3 + Java 21</strong>, the game changed fundamentally with <strong>Project Loom (Virtual Threads)</strong>. Virtual threads are lightweight user-mode threads managed entirely by the JVM rather than the OS kernel. You can create millions of virtual threads concurrently with negligible memory overhead (~few hundred bytes).
+          </p>
+
+          <p>
+            When a virtual thread executes a blocking operation (e.g., standard JDBC query, blocking HTTP request, file read), the JVM automatically <em>unmounts</em> the virtual thread from its underlying OS carrier thread. The carrier thread immediately proceeds to run other virtual threads. When the I/O completes, the JVM unblocks and remounts the virtual thread on an available carrier thread:
+          </p>
+
+          <!-- Concurrency Architecture SVG Diagram -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 my-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Concurrency Architecture Shift</span>
+              <button onclick="copyRawMermaid('mermaid-1')" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                Copy Mermaid
+              </button>
+            </div>
+            <div class="overflow-x-auto py-2">
+              <svg class="w-full max-w-2xl mx-auto" viewBox="0 0 700 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="20" width="300" height="140" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+                <text x="35" y="45" fill="#38bdf8" font-size="12" font-weight="bold">NODE.JS (Event Loop)</text>
+                <rect x="35" y="60" width="270" height="28" rx="4" fill="#0f172a" stroke="#475569"/>
+                <text x="50" y="78" fill="#cbd5e1" font-size="11">Single Thread (Main Call Stack)</text>
+                <rect x="35" y="100" width="270" height="45" rx="4" fill="#0f172a" stroke="#475569"/>
+                <text x="50" y="120" fill="#94a3b8" font-size="10">libuv Worker Threadpool (Async I/O)</text>
+                <text x="50" y="135" fill="#64748b" font-size="9">OS Threads: 4 default (CPU heavy tasks)</text>
+
+                <rect x="380" y="20" width="300" height="140" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+                <text x="395" y="45" fill="#4ade80" font-size="12" font-weight="bold">JAVA 21 (Spring Boot 3 + Loom)</text>
+                <rect x="395" y="60" width="270" height="38" rx="4" fill="#0f172a" stroke="#475569"/>
+                <text x="410" y="76" fill="#cbd5e1" font-size="11">Millions of Virtual Threads (User-mode)</text>
+                <text x="410" y="90" fill="#64748b" font-size="9">Mounted/unmounted when blocking on I/O</text>
+                <rect x="395" y="108" width="270" height="38" rx="4" fill="#0f172a" stroke="#475569"/>
+                <text x="410" y="125" fill="#94a3b8" font-size="10">Carrier OS Threads Pool (Equal to CPU Cores)</text>
+                <text x="410" y="138" fill="#4ade80" font-size="9">Zero CPU context switch overhead</text>
+              </svg>
+            </div>
+            <textarea id="mermaid-1" class="hidden">
+graph LR
+    subgraph Node[Node.js Concurrency]
+        E[Event Loop Single Thread] -->|Offload I/O| W[libuv Thread Pool]
+        W -->|Event Queue| E
+    end
+    subgraph Java21[Java 21 Virtual Threads - Project Loom]
+        VT[Virtual Thread / Request] -->|Blocking I/O| Unmount[JVM Unmounts from Carrier]
+        Unmount -->|Free to handle next| CT[Carrier OS Thread]
+        VT -->|I/O Completes| Remount[JVM Remounts & Resumes]
+    end
+            </textarea>
+          </div>
+
+          <div class="alert-tip p-4 rounded-xl text-xs space-y-1">
+            <strong class="text-emerald-400 block text-sm">💡 Production Takeaway for Node Developers:</strong>
+            You no longer have to write non-blocking reactive chains (`Mono`, `Flux`, or nested promises) in Java. Write clean, readable, sequential synchronous code—the JVM manages the high-throughput asynchronous execution underneath via Virtual Threads.
+          </div>
+
+          <!-- Section 1.2 Table -->
+          <h3 class="text-lg font-semibold text-white mt-8">1.2 The Node/Express/NestJS vs. Spring Boot Rosetta Stone</h3>
+          <p>Use this mapping to immediately orient every concept you already know from Node to its Java Spring Boot equivalent:</p>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800 my-4 shadow-xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-800/90 text-slate-200 font-semibold uppercase tracking-wider border-b border-slate-700">
+                <tr>
+                  <th class="p-3.5">Architecture Concept</th>
+                  <th class="p-3.5">Node.js (Express / NestJS)</th>
+                  <th class="p-3.5">Java Spring Boot 3</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/70 text-slate-300">
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Package Manager</td>
+                  <td class="p-3.5 font-mono text-slate-400">npm / pnpm / yarn (package.json)</td>
+                  <td class="p-3.5 font-mono text-emerald-400">Maven (pom.xml) or Gradle (build.gradle)</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Runtime & SDK</td>
+                  <td class="p-3.5 font-mono text-slate-400">Node.js v20+ / Bun</td>
+                  <td class="p-3.5 font-mono text-emerald-400">JDK 21 (Eclipse Temurin, Amazon Corretto)</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">App Entrypoint</td>
+                  <td class="p-3.5 font-mono text-slate-400">server.js / main.ts</td>
+                  <td class="p-3.5 font-mono text-emerald-400">@SpringBootApplication with public static void main()</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Routing / Controller</td>
+                  <td class="p-3.5 font-mono text-slate-400">app.get('/path') or @Controller()</td>
+                  <td class="p-3.5 font-mono text-emerald-400">@RestController + @GetMapping("/path")</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Middleware</td>
+                  <td class="p-3.5 font-mono text-slate-400">app.use((req, res, next) =&gt; {})</td>
+                  <td class="p-3.5 font-mono text-emerald-400">Jakarta Servlet Filter / HandlerInterceptor</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Dependency Injection</td>
+                  <td class="p-3.5 font-mono text-slate-400">Manual / NestJS @Injectable()</td>
+                  <td class="p-3.5 font-mono text-emerald-400">Spring IoC Container (@Component, @Service, @Autowired)</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Data Access / ORM</td>
+                  <td class="p-3.5 font-mono text-slate-400">Prisma / TypeORM / Mongoose</td>
+                  <td class="p-3.5 font-mono text-emerald-400">Spring Data JPA + Hibernate</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Payload Validation</td>
+                  <td class="p-3.5 font-mono text-slate-400">zod / class-validator</td>
+                  <td class="p-3.5 font-mono text-emerald-400">Jakarta Validation (@NotNull, @Size, @Valid)</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Configuration Management</td>
+                  <td class="p-3.5 font-mono text-slate-400">dotenv (.env)</td>
+                  <td class="p-3.5 font-mono text-emerald-400">application.yml / application.properties</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Background Jobs</td>
+                  <td class="p-3.5 font-mono text-slate-400">BullMQ / Celery / node-cron</td>
+                  <td class="p-3.5 font-mono text-emerald-400">@Async / @Scheduled / Spring Batch</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Error Handling</td>
+                  <td class="p-3.5 font-mono text-slate-400">(err, req, res, next) middleware</td>
+                  <td class="p-3.5 font-mono text-emerald-400">@RestControllerAdvice + @ExceptionHandler</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 font-semibold text-white">Testing Suite</td>
+                  <td class="p-3.5 font-mono text-slate-400">Jest / Vitest + Supertest</td>
+                  <td class="p-3.5 font-mono text-emerald-400">JUnit 5 + Mockito + Testcontainers + MockMvc</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">1.3 Inversion of Control (IoC) & Dependency Injection (DI) Under the Hood</h3>
+          <p>
+            In standard Node.js, you instantiate classes manually or import singleton instances from files:
+          </p>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono">Node.js / TypeScript Singleton</div>
+            <pre class="p-3 text-sky-300"><code>// Node.js
+import { db } from "./db";
+export class ProductService {
+  async getProducts() { return db.query("SELECT * FROM products"); }
+}
+export const productService = new ProductService(); // Exported singleton</code></pre>
+          </div>
+
+          <p>
+            In Spring Boot, you <strong>never</strong> use <code>new ProductService()</code>. The <strong>Spring IoC Container</strong> manages the full lifecycle of your application components (called <strong>Beans</strong>). When the application boots, Spring scans your packages for annotations (`@Component`, `@Service`, `@Repository`, `@RestController`), instantiates single instances, resolves their dependencies, and wires them together via <strong>Constructor Injection</strong>:
+          </p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>ProductService.java (Constructor Injection)</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>@Service
+public class ProductService {
+
+    private final ProductRepository productRepository;
+
+    // Spring automatically supplies the ProductRepository bean at runtime
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
+}</code></pre>
+          </div>
+
+          <div class="alert-important p-4 rounded-xl text-xs space-y-1">
+            <strong class="text-purple-400 block text-sm">⚠️ Enterprise Rule: Avoid Field Injection (`@Autowired private ProductRepository repo;`)</strong>
+            Field injection makes unit testing difficult because dependencies cannot be provided without launching the entire Spring container. Constructor injection guarantees immutability via <code>final</code> fields and allows pure unit tests by instantiating the class with mock dependencies.
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">1.4 Annotations Demystified: Dynamic Proxies & Bytecode Instrumentation</h3>
+          <p>
+            To JavaScript developers, Spring annotations (`@Transactional`, `@Cacheable`, `@PreAuthorize`) look like magic. Under the hood, Spring uses <strong>CGLIB Dynamic Proxies</strong> and <strong>Aspect-Oriented Programming (AOP)</strong>.
+          </p>
+          <p>
+            When you annotate a class or method with <code>@Transactional</code>, Spring generates an intermediate proxy subclass wrapping your bean. When a client calls your method, it hits the proxy first:
+          </p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 my-3">
+            <div class="flex items-center justify-between mb-3 text-xs">
+              <span class="text-slate-400 font-semibold uppercase">Dynamic Proxy & Transaction Interceptor</span>
+              <button onclick="copyRawMermaid('mermaid-proxy')" class="text-blue-400 hover:text-blue-300">Copy Mermaid</button>
+            </div>
+            <div class="overflow-x-auto py-2 text-center text-xs">
+              <div class="inline-flex items-center gap-2 p-3 bg-slate-800/60 rounded-lg border border-slate-700">
+                <span class="text-blue-400 font-bold">Client Call</span>
+                <span>➔</span>
+                <span class="text-yellow-400 font-bold bg-yellow-950/60 px-2 py-1 rounded border border-yellow-700/50">CGLIB Proxy (Intercepts call)</span>
+                <span>➔</span>
+                <span class="text-emerald-400 font-bold">BEGIN TX</span>
+                <span>➔</span>
+                <span class="text-purple-400 font-bold">Real Service Execution</span>
+                <span>➔</span>
+                <span class="text-emerald-400 font-bold">COMMIT / ROLLBACK</span>
+              </div>
+            </div>
+            <textarea id="mermaid-proxy" class="hidden">
+sequenceDiagram
+    participant Client
+    participant Proxy as CGLIB Dynamic Proxy
+    participant Target as Real Service Bean
+    participant DB as Database Connection
+
+    Client->>Proxy: invoke createOrder()
+    Note over Proxy: TransactionInterceptor intercepts call
+    Proxy->>DB: BEGIN TRANSACTION
+    Proxy->>Target: invoke real createOrder()
+    Target-->>Proxy: Return Order Entity
+    Note over Proxy: Check for RuntimeException
+    Proxy->>DB: COMMIT TRANSACTION
+    Proxy-->>Client: Return HTTP 201 Created Response
+            </textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 2 -->
+      <!-- ========================================== -->
+      <section id="sec-2" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">02.</span> Environment, Tooling & Maven <code>pom.xml</code>
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(2)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">2.1 JDK 21 LTS Setup</h3>
+          <p>Verify your environment contains modern Java 21 LTS and Maven 3.9+:</p>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>Terminal Shell Commands</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-orange-300"><code># Verify Java 21
+java -version
+# openjdk version "21.0.2" 2024-01-16 LTS
+
+# Verify Maven 3.9+
+mvn -version
+# Apache Maven 3.9.6</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">2.2 Scaffolding Services via Spring Initializr</h3>
+          <p>Similar to <code>npm init</code> or <code>create-next-app</code>, Spring provides an automated REST endpoint to generate starter projects:</p>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>Scaffold order-service via cURL</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-orange-300"><code>curl https://start.spring.io/starter.zip \
+  -d dependencies=web,data-jpa,postgresql,validation,actuator,lombok,cloud-feign \
+  -d language=java \
+  -d javaVersion=21 \
+  -d bootVersion=3.3.0 \
+  -d type=maven-project \
+  -d groupId=com.ecommerce \
+  -d artifactId=order-service \
+  -d name=order-service \
+  -o order-service.zip
+
+unzip order-service.zip -d order-service</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">2.3 Maven <code>pom.xml</code> Explained for Node Developers</h3>
+          <p>
+            Think of <code>pom.xml</code> as <code>package.json</code>, <code>tsconfig.json</code>, and <code>webpack/vite.config.ts</code> rolled into one declarative file:
+          </p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg">
+            <div class="bg-slate-800/80 px-4 py-2 border-b border-slate-700/60 flex items-center justify-between text-xs">
+              <span class="text-slate-300 font-mono font-medium">pom.xml (Order Service Configuration)</span>
+              <button onclick="copyCode(this)" class="copy-btn px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 transition flex items-center gap-1.5">
+                <span>Copy XML</span>
+              </button>
+            </div>
+            <pre class="p-4 text-emerald-300 overflow-x-auto"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    
+    &lt;!-- Parent POM: Curated dependency version BOM (like package-lock.json) --&gt;
+    &lt;parent&gt;
+        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+        &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+        &lt;version&gt;3.3.0&lt;/version&gt;
+        &lt;relativePath/&gt;
+    &lt;/parent&gt;
+
+    &lt;groupId&gt;com.ecommerce&lt;/groupId&gt;
+    &lt;artifactId&gt;order-service&lt;/artifactId&gt;
+    &lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
+    &lt;name&gt;order-service&lt;/name&gt;
+    &lt;description&gt;E-Commerce Order Microservice&lt;/description&gt;
+
+    &lt;properties&gt;
+        &lt;java.version&gt;21&lt;/java.version&gt;
+        &lt;spring-cloud.version&gt;2023.0.1&lt;/spring-cloud.version&gt;
+    &lt;/properties&gt;
+
+    &lt;dependencies&gt;
+        &lt;!-- Express equivalent: Web MVC + Embedded Tomcat --&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+
+        &lt;!-- ORM: Prisma / TypeORM equivalent --&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-data-jpa&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+
+        &lt;!-- Database Driver: pg / pg-promise equivalent --&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.postgresql&lt;/groupId&gt;
+            &lt;artifactId&gt;postgresql&lt;/artifactId&gt;
+            &lt;scope&gt;runtime&lt;/scope&gt;
+        &lt;/dependency&gt;
+
+        &lt;!-- Validation: zod / class-validator equivalent --&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-validation&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+
+        &lt;!-- Inter-service Synchronous Declarative HTTP Client --&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-cloud-starter-openfeign&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+
+        &lt;!-- Asynchronous Messaging: Kafka --&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.kafka&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-kafka&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+
+        &lt;!-- Observability, Health &amp; Metrics --&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+
+        &lt;!-- Testing: Jest + Supertest equivalent --&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;
+            &lt;scope&gt;test&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+
+    &lt;dependencyManagement&gt;
+        &lt;dependencies&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+                &lt;artifactId&gt;spring-cloud-dependencies&lt;/artifactId&gt;
+                &lt;version&gt;${spring-cloud.version}&lt;/version&gt;
+                &lt;type&gt;pom&lt;/type&gt;
+                &lt;scope&gt;import&lt;/scope&gt;
+            &lt;/dependency&gt;
+        &lt;/dependencies&gt;
+    &lt;/dependencyManagement&gt;
+
+    &lt;build&gt;
+        &lt;plugins&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+                &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+            &lt;/plugin&gt;
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+&lt;/project&gt;</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 3 -->
+      <!-- ========================================== -->
+      <section id="sec-3" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">03.</span> Service Anatomy & Request Lifecycle
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(3)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">3.1 Standard Enterprise Directory Structure</h3>
+          <p>Enterprise Java follows strict architectural boundaries separating domain models, data access, business orchestration, and HTTP layers:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 font-mono text-xs text-slate-300 overflow-x-auto">
+            <pre><code>order-service/
+├── pom.xml
+├── src/
+│   ├── main/
+│   │   ├── java/com/ecommerce/order/
+│   │   │   ├── OrderServiceApplication.java      # Main Bootstrap
+│   │   │   ├── client/                          # External REST / OpenFeign clients
+│   │   │   ├── config/                          # Security, Kafka, App configurations
+│   │   │   ├── controller/                      # REST API endpoints (Routing)
+│   │   │   ├── dto/                             # Immutable Request/Response Records
+│   │   │   ├── entity/                          # JPA Entities (Database Tables)
+│   │   │   ├── event/                           # Kafka Event Payloads
+│   │   │   ├── exception/                       # Custom exceptions & RFC 7807 advice
+│   │   │   ├── repository/                     # Spring Data JPA interfaces
+│   │   │   └── service/                         # Business Logic & @Transactional orchestration
+│   │   └── resources/
+│   │       ├── application.yml                  # Base configuration
+│   │       ├── application-dev.yml              # Local environment overrides
+│   │       └── db/migration/                    # Flyway SQL migration scripts
+│   │           └── V1__create_orders_table.sql
+│   └── test/
+│       └── java/com/ecommerce/order/            # Unit & Testcontainers tests</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">3.2 The Entrypoint: `@SpringBootApplication`</h3>
+          <p>In Node.js, you start your server with <code>app.listen(3000)</code>. In Spring Boot, the entry point is an annotated class containing a standard Java <code>main()</code> method:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>OrderServiceApplication.java</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.order;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+
+@SpringBootApplication
+// Composite annotation encompassing:
+// 1. @Configuration: Tags class as source of bean definitions
+// 2. @EnableAutoConfiguration: Tells Spring to configure beans based on classpath jars
+// 3. @ComponentScan: Scans sub-packages for @Component, @Service, @Repository, @RestController
+@EnableFeignClients // Scans and registers declarative HTTP clients
+public class OrderServiceApplication {
+
+    public static void main(String[] args) {
+        // Initializes ApplicationContext, starts embedded Tomcat on configured port
+        SpringApplication.run(OrderServiceApplication.class, args);
+    }
+}</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">3.3 Production Configuration: `application.yml`</h3>
+          <p>In Node.js, environment variables are loaded via <code>dotenv</code> (`process.env.DB_URL`). Spring Boot uses hierarchical YAML with property substitution and default fallbacks:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>src/main/resources/application.yml</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-sky-300"><code>server:
+  port: ${PORT:8082}
+
+spring:
+  application:
+    name: order-service
+  threads:
+    virtual:
+      enabled: true # Java 21 Project Loom Virtual Threads
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:order_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASS:postgres}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: validate # NEVER use 'update' or 'create' in production!
+    open-in-view: false # CRITICAL: Disables OSIV to prevent keeping DB connections open during HTTP render
+    show-sql: false
+
+ecommerce:
+  inventory-service-url: ${INVENTORY_SERVICE_URL:http://localhost:8083}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 4 -->
+      <!-- ========================================== -->
+      <section id="sec-4" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">04.</span> REST APIs, DTOs & Jakarta Validation
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(4)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">4.1 Immutable DTOs using Java Records</h3>
+          <p>In modern Java, <strong>Records</strong> replace bulky boilerplate classes. A record provides an immutable data carrier with automatically generated constructor, getters (`name()`), `equals()`, `hashCode()`, and `toString()`:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>ProductDTOs.java (Jakarta Validation Annotations)</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.product.dto;
+
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+
+public class ProductDTOs {
+
+    // Request DTO with validation constraints (zod equivalent)
+    public record CreateProductRequest(
+        @NotBlank(message = "Product name cannot be blank")
+        String name,
+
+        String description,
+
+        @NotNull(message = "Price is required")
+        @DecimalMin(value = "0.01", message = "Price must be greater than zero")
+        BigDecimal price,
+
+        @NotBlank(message = "SKU code is required")
+        String skuCode
+    ) {}
+
+    // Response DTO
+    public record ProductResponse(
+        Long id,
+        String name,
+        String description,
+        BigDecimal price,
+        String skuCode
+    ) {}
+}</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">4.2 REST Controller Implementation</h3>
+          <p>Controllers map HTTP verbs to Java methods, deserialize payloads, trigger validations, and return HTTP status codes:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>ProductController.java</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.product.controller;
+
+import com.ecommerce.product.dto.ProductDTOs.*;
+import com.ecommerce.product.service.ProductService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/products")
+public class ProductController {
+
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @PostMapping
+    public ResponseEntity&lt;ProductResponse&gt; createProduct(
+            @Valid @RequestBody CreateProductRequest request
+    ) {
+        ProductResponse response = productService.createProduct(request);
+        return ResponseEntity
+                .created(URI.create("/api/v1/products/" + response.id()))
+                .body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;ProductResponse&gt;&gt; getAllProducts() {
+        return ResponseEntity.ok(productService.getAllProducts());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity&lt;ProductResponse&gt; getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
+    }
+}</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">4.3 Global Exception Handling (RFC 7807 `ProblemDetail`)</h3>
+          <p>In Express, you would write an error middleware: <code>app.use((err, req, res, next) =&gt; ...)</code>. In Spring Boot 3, use <code>@RestControllerAdvice</code> emitting standardized RFC 7807 payloads:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>GlobalExceptionHandler.java</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.product.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.net.URI;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ProblemDetail handleProductNotFound(ProductNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Product Not Found");
+        problem.setType(URI.create("https://api.ecommerce.com/errors/not-found"));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleValidationExceptions(MethodArgumentNotValidException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+            HttpStatus.BAD_REQUEST, "Validation failed for one or more fields"
+        );
+        problem.setTitle("Bad Request");
+
+        Map&lt;String, String&gt; invalidFields = new HashMap&lt;&gt;();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            invalidFields.put(error.getField(), error.getDefaultMessage());
+        }
+        problem.setProperty("invalidParams", invalidFields);
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 5 -->
+      <!-- ========================================== -->
+      <section id="sec-5" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">05.</span> Persistence & Data Layer with Spring Data JPA & Hibernate
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(5)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">5.1 ORM Mental Model: Prisma vs. Hibernate</h3>
+          <p>
+            In <strong>Prisma</strong>, entities are simple JSON objects. When you query records, Prisma executes an explicit SQL query. To save changes, you must explicitly call <code>prisma.user.update(...)</code>.
+          </p>
+          <p>
+            In <strong>Hibernate (JPA)</strong>, entities are stateful managed objects inside an in-memory <strong>Persistence Context (First-Level Cache)</strong>. When an entity is loaded within a <code>@Transactional</code> boundary:
+          </p>
+          <ul class="list-disc pl-5 space-y-1 text-slate-400 text-xs">
+            <li>Hibernate tracks initial property snapshots.</li>
+            <li>If you mutate a field (e.g., <code>product.setPrice(newPrice)</code>), Hibernate's <strong>Dirty Checking</strong> detects the mutation automatically.</li>
+            <li>When the transaction commits, Hibernate issues the SQL <code>UPDATE</code> statement automatically. Calling <code>repository.save()</code> on an already managed entity is completely redundant.</li>
+          </ul>
+
+          <h3 class="text-lg font-semibold text-white mt-8">5.2 JPA Entity Definition</h3>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>Product.java</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.product.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.math.BigDecimal;
+import java.time.Instant;
+
+@Entity
+@Table(name = "products", indexes = {
+    @Index(name = "idx_products_sku", columnList = "sku_code", unique = true)
+})
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 150)
+    private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
+
+    @Column(name = "sku_code", nullable = false, unique = true, length = 50)
+    private String skuCode;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
+    }
+}</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">5.3 Solving the $N+1$ Query Problem</h3>
+          <p>
+            The most infamous ORM performance bug: fetching 10 Orders executes 1 query for orders, and 10 separate queries to fetch the items for each order ($N+1$ queries).
+          </p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>OrderRepository.java (JOIN FETCH)</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>public interface OrderRepository extends JpaRepository&lt;Order, Long&gt; {
+
+    // PREVENTS N+1: JOIN FETCH loads Order and OrderItems in a SINGLE SQL INNER JOIN
+    @Query("SELECT o FROM Order o JOIN FETCH o.items WHERE o.orderNumber = :orderNumber")
+    Optional&lt;Order&gt; findByOrderNumberWithItems(@Param("orderNumber") String orderNumber);
+}</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">5.4 Declarative Transactions: `@Transactional` Rules</h3>
+          <p>By default in Spring, transactions roll back <strong>only on unchecked exceptions</strong> (`RuntimeException` and `Error`). If a checked `Exception` is thrown, the transaction commits! Always configure explicit rollback behavior:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <pre class="p-3 text-emerald-300"><code>// Rollback on ANY exception including checked exceptions
+@Transactional(rollbackFor = Exception.class)
+public Order processOrder(OrderRequest req) throws PaymentException { ... }</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 6 -->
+      <!-- ========================================== -->
+      <section id="sec-6" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">06.</span> Multiservice Architecture Topology
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(6)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <p>Our distributed e-commerce system is decomposed into specialized bounded contexts:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 my-3">
+            <div class="flex items-center justify-between mb-3 text-xs">
+              <span class="text-slate-400 font-semibold uppercase">Microservices System Topology</span>
+              <button onclick="copyRawMermaid('mermaid-topo-2')" class="text-blue-400 hover:text-blue-300">Copy Mermaid</button>
+            </div>
+            <div class="overflow-x-auto py-2">
+              <svg class="w-full max-w-2xl mx-auto" viewBox="0 0 700 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="20" y="90" width="100" height="50" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+                <text x="35" y="120" fill="#60a5fa" font-size="12" font-weight="bold">Gateway :8080</text>
+                
+                <path d="M120 115 H 180" stroke="#64748b" stroke-width="2" stroke-dasharray="4"/>
+                
+                <rect x="180" y="20" width="140" height="45" rx="6" fill="#1e293b" stroke="#475569"/>
+                <text x="195" y="48" fill="#e2e8f0" font-size="11">Product Service :8081</text>
+                
+                <rect x="180" y="90" width="140" height="45" rx="6" fill="#1e293b" stroke="#475569"/>
+                <text x="200" y="118" fill="#e2e8f0" font-size="11">Order Service :8082</text>
+                
+                <rect x="180" y="165" width="140" height="45" rx="6" fill="#1e293b" stroke="#475569"/>
+                <text x="190" y="193" fill="#e2e8f0" font-size="11">Inventory Service :8083</text>
+
+                <path d="M250 135 V 165" stroke="#38bdf8" stroke-width="2"/>
+                <text x="255" y="153" fill="#38bdf8" font-size="9">OpenFeign (Sync)</text>
+
+                <path d="M320 115 H 420" stroke="#ec4899" stroke-width="2"/>
+                <rect x="420" y="90" width="110" height="50" rx="6" fill="#831843" stroke="#f472b6"/>
+                <text x="435" y="120" fill="#fdf2f8" font-size="11" font-weight="bold">Kafka Topics</text>
+
+                <path d="M530 115 H 580" stroke="#f472b6" stroke-width="2"/>
+                <rect x="580" y="60" width="100" height="40" rx="6" fill="#1e293b" stroke="#475569"/>
+                <text x="590" y="85" fill="#cbd5e1" font-size="10">Notification :8085</text>
+
+                <rect x="580" y="130" width="100" height="40" rx="6" fill="#1e293b" stroke="#475569"/>
+                <text x="595" y="155" fill="#cbd5e1" font-size="10">Payment :8084</text>
+              </svg>
+            </div>
+            <textarea id="mermaid-topo-2" class="hidden">
+graph LR
+    Client[Web/Mobile App] --> Gateway[Spring Cloud Gateway :8080]
+    Gateway --> Product[Product Service :8081]
+    Gateway --> Order[Order Service :8082]
+    Gateway --> Inventory[Inventory Service :8083]
+    Order -->|OpenFeign Sync Call| Inventory
+    Order -->|Async Event: order-placed| Kafka[Apache Kafka Cluster]
+    Kafka --> Notification[Notification Service :8085]
+    Kafka --> Payment[Payment Service :8084]
+            </textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 7 -->
+      <!-- ========================================== -->
+      <section id="sec-7" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">07.</span> Spring Cloud API Gateway
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(7)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <p>Spring Cloud Gateway sits at the perimeter of your microservice cluster. It provides path routing, header modification, CORS management, and rate limiting:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>api-gateway/src/main/resources/application.yml</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-sky-300"><code>server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: product-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/products/**
+          filters:
+            - AddRequestHeader=X-Gateway-Forwarded, true
+
+        - id: order-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/v1/orders/**
+
+        - id: inventory-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/inventory/**
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 8 -->
+      <!-- ========================================== -->
+      <section id="sec-8" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">08.</span> OpenFeign & Resilience4j Circuit Breakers
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(8)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">8.1 Declarative REST with OpenFeign</h3>
+          <p>In Node.js, you write manual Axios wrappers. Spring Cloud OpenFeign generates the HTTP client implementation dynamically from an annotated interface:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>InventoryClient.java</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.order.client;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import java.util.List;
+
+@FeignClient(name = "inventory-service", url = "${ecommerce.inventory-service-url}")
+public interface InventoryClient {
+
+    record InventoryResponse(String skuCode, boolean isInStock, Integer availableQuantity) {}
+
+    @GetMapping("/api/v1/inventory/check")
+    List&lt;InventoryResponse&gt; checkStock(@RequestParam("skuCode") List&lt;String&gt; skuCodes);
+}</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">8.2 Resilience4j Circuit Breakers</h3>
+          <p>If InventoryService crashes or hangs, the calling service must not exhaust its threads. A Circuit Breaker monitors failure rates and opens the circuit:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>InventoryFallbackService.java</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.order.service;
+
+import com.ecommerce.order.client.InventoryClient;
+import com.ecommerce.order.client.InventoryClient.InventoryResponse;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import java.util.Collections;
+import java.util.List;
+
+@Service
+@Slf4j
+public class InventoryFallbackService {
+
+    private final InventoryClient inventoryClient;
+
+    public InventoryFallbackService(InventoryClient inventoryClient) {
+        this.inventoryClient = inventoryClient;
+    }
+
+    @CircuitBreaker(name = "inventory", fallbackMethod = "fallbackCheckStock")
+    public List&lt;InventoryResponse&gt; checkInventoryWithResilience(List&lt;String&gt; skuCodes) {
+        return inventoryClient.checkStock(skuCodes);
+    }
+
+    // Fallback executed when circuit is OPEN or call times out
+    public List&lt;InventoryResponse&gt; fallbackCheckStock(List&lt;String&gt; skuCodes, Throwable throwable) {
+        log.error("Inventory service unreachable. Reason: {}", throwable.getMessage());
+        return Collections.emptyList();
+    }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 9 -->
+      <!-- ========================================== -->
+      <section id="sec-9" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">09.</span> Asynchronous Event-Driven Messaging with Apache Kafka
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(9)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <p>In high-throughput e-commerce systems, order placement triggers asynchronous actions (charging payments, sending email/SMS confirmations) without holding the client HTTP connection:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>OrderEventProducer.java & NotificationConsumer.java</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>// 1. Immutable Event Record
+package com.ecommerce.order.event;
+
+import java.math.BigDecimal;
+
+public record OrderPlacedEvent(
+    String orderNumber,
+    String customerEmail,
+    BigDecimal totalAmount
+) {}
+
+// 2. Kafka Producer in order-service
+@Service
+@Slf4j
+public class OrderEventProducer {
+
+    private static final String TOPIC = "order-placed-topic";
+    private final KafkaTemplate&lt;String, OrderPlacedEvent&gt; kafkaTemplate;
+
+    public OrderEventProducer(KafkaTemplate&lt;String, OrderPlacedEvent&gt; kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    public void publishOrderPlaced(OrderPlacedEvent event) {
+        log.info("Emitting OrderPlacedEvent for order: {}", event.orderNumber());
+        // Using orderNumber as partition key guarantees strict partition ordering
+        kafkaTemplate.send(TOPIC, event.orderNumber(), event);
+    }
+}
+
+// 3. Kafka Consumer in notification-service
+@Service
+@Slf4j
+public class OrderPlacedNotificationConsumer {
+
+    @KafkaListener(topics = "order-placed-topic", groupId = "notification-group")
+    public void handleOrderPlaced(OrderPlacedEvent event) {
+        log.info("Received notification request for order: {}. Sending confirmation to {}", 
+                 event.orderNumber(), event.customerEmail());
+        // Execute email sending logic
+    }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 10 -->
+      <!-- ========================================== -->
+      <section id="sec-10" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">10.</span> Distributed Transactions & The Saga Pattern
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(10)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">10.1 The Microservices Consistency Dilemma</h3>
+          <p>
+            In a monolith, placing an order and decrementing stock happens inside a single `@Transactional` DB transaction. In microservices:
+          </p>
+          <ul class="list-disc pl-5 space-y-1 text-slate-400 text-xs">
+            <li><code>OrderService</code> writes to <code>Orders_DB</code></li>
+            <li><code>InventoryService</code> writes to <code>Inventory_DB</code></li>
+            <li><code>PaymentService</code> communicates with Stripe / Payment Gateway</li>
+          </ul>
+          <p>
+            If Stripe declines the card, how do you roll back the stock reservation in `InventoryService`? We use the <strong>Choreography Saga Pattern</strong> with <strong>Compensating Actions</strong>:
+          </p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 my-3">
+            <div class="flex items-center justify-between mb-3 text-xs">
+              <span class="text-slate-400 font-semibold uppercase">Saga State Transitions & Compensations</span>
+              <button onclick="copyRawMermaid('mermaid-saga')" class="text-blue-400 hover:text-blue-300">Copy Mermaid</button>
+            </div>
+            <div class="overflow-x-auto py-2 text-center text-xs">
+              <div class="inline-flex flex-col gap-2 p-3 bg-slate-800/60 rounded-lg border border-slate-700 max-w-xl text-left">
+                <div><strong class="text-blue-400">1. OrderCreated</strong>: Order saved with status PENDING.</div>
+                <div><strong class="text-purple-400">2. StockReserved</strong>: Inventory listens, decrements inventory. Emits StockReserved.</div>
+                <div><strong class="text-yellow-400">3. PaymentAttempted</strong>: Payment service charges card.</div>
+                <div><strong class="text-rose-400">4. If Payment Declined (Compensating Transaction)</strong>: Emits PaymentFailed. Inventory listens and increments back stock (Release Reservation). Order listens and marks order as CANCELLED.</div>
+              </div>
+            </div>
+            <textarea id="mermaid-saga" class="hidden">
+stateDiagram-v2
+    [*] --> OrderCreated: Order Service
+    OrderCreated --> StockReserved: Inventory Service (Reserved)
+    OrderCreated --> StockFailed: Inventory Service (Out of Stock)
+    
+    StockFailed --> OrderCancelled: Order Service (Compensate)
+    
+    StockReserved --> PaymentSuccess: Payment Service (Charged)
+    StockReserved --> PaymentFailed: Payment Service (Declined)
+    
+    PaymentFailed --> StockReleased: Inventory Service (Compensate)
+    PaymentFailed --> OrderCancelled: Order Service (Compensate)
+    
+    PaymentSuccess --> [*]: Order Fulfilled
+            </textarea>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">10.2 The Transactional Outbox Pattern</h3>
+          <p>To eliminate dual-write bugs where the database commit succeeds but the network disconnects before publishing to Kafka, write the event into an <strong>Outbox table</strong> inside the same local database transaction:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>OrderServiceOutbox.java</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>@Transactional
+public Order createOrder(OrderRequest request) {
+    Order order = orderRepository.save(mapToEntity(request));
+    
+    OutboxEvent outboxEvent = OutboxEvent.builder()
+            .aggregateType("ORDER")
+            .aggregateId(order.getOrderNumber())
+            .type("ORDER_CREATED")
+            .payload(objectMapper.writeValueAsString(new OrderPlacedEvent(order)))
+            .createdAt(Instant.now())
+            .build();
+            
+    outboxRepository.save(outboxEvent); // Written atomically in PostgreSQL
+    return order;
+    // Debezium CDC or background job tails outbox table and streams to Kafka
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 11 -->
+      <!-- ========================================== -->
+      <section id="sec-11" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">11.</span> Caching & High Performance with Redis
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(11)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">11.1 Spring Cache Abstraction</h3>
+          <p>Spring provides clean declarative caching: <code>@Cacheable</code> on reads, and <code>@CacheEvict</code> on writes to invalidate stale records:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>ProductService.java (Redis Caching)</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>@Service
+public class ProductService {
+
+    private final ProductRepository productRepository;
+
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
+
+    @Cacheable(value = "products", key = "#id")
+    public ProductResponse getProductById(Long id) {
+        // Hits Postgres only on cache miss
+        return productRepository.findById(id)
+                .map(this::mapToResponse)
+                .orElseThrow(() -&gt; new ProductNotFoundException("Product " + id + " not found"));
+    }
+
+    @CacheEvict(value = "products", key = "#id")
+    public void updateProduct(Long id, UpdateProductRequest request) {
+        // Evicts stale product from Redis upon DB update
+    }
+}</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">11.2 Distributed Locking with Redisson (Preventing Overselling)</h3>
+          <p>In high-concurrency flash sales, multiple instances of `InventoryService` might attempt to sell the last unit of stock simultaneously. Standard database locks can cause lock contention; use a distributed Redis lock:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>ConcurrencySafeInventoryService.java (Redisson Lock)</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.inventory.service;
+
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.stereotype.Service;
+import java.util.concurrent.TimeUnit;
+
+@Service
+public class ConcurrencySafeInventoryService {
+
+    private final RedissonClient redissonClient;
+    private final InventoryRepository inventoryRepository;
+
+    public ConcurrencySafeInventoryService(RedissonClient redissonClient, 
+                                           InventoryRepository inventoryRepository) {
+        this.redissonClient = redissonClient;
+        this.inventoryRepository = inventoryRepository;
+    }
+
+    public boolean reserveStock(String skuCode, int quantity) {
+        String lockKey = "lock:inventory:" + skuCode;
+        RLock lock = redissonClient.getLock(lockKey);
+
+        try {
+            // Wait up to 5s to acquire; lease for max 10s
+            boolean acquired = lock.tryLock(5, 10, TimeUnit.SECONDS);
+            if (!acquired) {
+                throw new IllegalStateException("Could not acquire lock for SKU: " + skuCode);
+            }
+
+            Inventory inventory = inventoryRepository.findBySkuCode(skuCode)
+                    .orElseThrow(() -&gt; new IllegalArgumentException("SKU not found"));
+
+            if (inventory.getQuantity() &gt;= quantity) {
+                inventory.setQuantity(inventory.getQuantity() - quantity);
+                inventoryRepository.save(inventory);
+                return true;
+            }
+            return false;
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        } finally {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+        }
+    }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 12 -->
+      <!-- ========================================== -->
+      <section id="sec-12" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">12.</span> Enterprise Security with Spring Security 6 & OAuth2 / JWT
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(12)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">12.1 Modern `SecurityFilterChain` Bean Configuration</h3>
+          <p>Spring Security 6+ replaces old web security adapters with functional lambda configurations:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>SecurityConfig.java (Stateless JWT Resource Server)</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.order.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity // Enables @PreAuthorize("hasRole('ADMIN')")
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -&gt; csrf.disable()) // Stateless REST APIs do not require CSRF
+            .sessionManagement(session -&gt; 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .authorizeHttpRequests(auth -&gt; auth
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+            )
+            .oauth2ResourceServer(oauth2 -&gt; oauth2.jwt(jwt -&gt; {})); // Validates JWT tokens against Issuer
+
+        return http.build();
+    }
+}</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">12.2 Propagating JWT Context via Feign</h3>
+          <p>When `OrderService` calls `InventoryService`, forward the user's Bearer token using a Feign `RequestInterceptor`:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>FeignAuthForwardInterceptor.java</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.order.config;
+
+import feign.RequestInterceptor;
+import feign.RequestTemplate;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+
+@Configuration
+public class FeignAuthForwardInterceptor implements RequestInterceptor {
+
+    @Override
+    public void apply(RequestTemplate template) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof JwtAuthenticationToken jwtAuth) {
+            String tokenValue = jwtAuth.getToken().getTokenValue();
+            template.header("Authorization", "Bearer " + tokenValue);
+        }
+    }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 13 -->
+      <!-- ========================================== -->
+      <section id="sec-13" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">13.</span> Observability, Monitoring & Distributed Tracing
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(13)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <p>In a microservices transaction spanning Gateway $\to$ Order $\to$ Inventory $\to$ Kafka $\to$ Notification, debugging an error requires a correlated <strong>Trace ID</strong>:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>application.yml (Micrometer & OpenTelemetry)</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-sky-300"><code>management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  tracing:
+    sampling:
+      probability: 1.0 # Sample 100% of requests in dev
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans</code></pre>
+          </div>
+          <p class="text-xs text-slate-400">Spring Boot automatically injects `traceId` and `spanId` into SLF4J logs via Mapped Diagnostic Context (MDC):</p>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300">
+            2026-09-21 14:02:11.123 [order-service,a6f1d8c0b2e3,4f8a9e1d,true] INFO ... Checking inventory for SKU: IPHONE16
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 14 -->
+      <!-- ========================================== -->
+      <section id="sec-14" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">14.</span> Testing Enterprise Microservices
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(14)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">14.1 Real DB Testing with Testcontainers</h3>
+          <p>Never rely on in-memory H2 databases for testing (they behave differently from PostgreSQL). Use <strong>Testcontainers</strong> to run real Docker instances during tests:</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>OrderServiceIntegrationTest.java</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-emerald-300"><code>package com.ecommerce.order;
+
+import com.ecommerce.order.repository.OrderRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
+@Testcontainers
+class OrderServiceIntegrationTest {
+
+    // Automatically spins up a fresh Postgres Docker container for the test lifecycle
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer&lt;?&gt; postgres = new PostgreSQLContainer&lt;&gt;("postgres:16-alpine");
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @BeforeEach
+    void setUp() {
+        orderRepository.deleteAll();
+    }
+
+    @Test
+    void shouldCreateOrderSuccessfully() throws Exception {
+        String requestJson = """
+            { "orderNumber": "ORD-1234", "customerEmail": "buyer@test.com" }
+        """;
+
+        mockMvc.perform(post("/api/v1/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isCreated());
+
+        assertThat(orderRepository.findAll()).hasSize(1);
+    }
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 15 -->
+      <!-- ========================================== -->
+      <section id="sec-15" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">15.</span> Containerization & Deployment
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(15)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <h3 class="text-lg font-semibold text-white">15.1 Multi-Stage Alpine Dockerfile</h3>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>Dockerfile (Eclipse Temurin JRE 21 Alpine)</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-orange-300"><code>FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
+WORKDIR /workspace
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src src
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:21-jre-alpine AS runner
+WORKDIR /app
+RUN addgroup -S appgroup &amp;&amp; adduser -S appuser -G appgroup
+USER appuser
+COPY --from=builder /workspace/target/*.jar app.jar
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+EXPOSE 8082
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]</code></pre>
+          </div>
+
+          <h3 class="text-lg font-semibold text-white mt-8">15.2 Local Infrastructure Fleet `docker-compose.yml`</h3>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="bg-slate-800/80 px-4 py-1.5 text-xs text-slate-400 font-mono flex justify-between items-center">
+              <span>docker-compose.yml</span>
+              <button onclick="copyCode(this)" class="text-blue-400 hover:text-blue-300">Copy</button>
+            </div>
+            <pre class="p-3 text-sky-300"><code>version: '3.8'
+services:
+  postgres-order:
+    image: postgres:16-alpine
+    container_name: postgres-order
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    ports:
+      - "9092:9092"
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 16 -->
+      <!-- ========================================== -->
+      <section id="sec-16" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">16.</span> The 3-Day Intensive Fast-Track Roadmap
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(16)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-6 text-slate-300 text-sm leading-relaxed">
+          <p>As an experienced 5-year full-stack engineer, your focus is executing the framework conventions and idiomatic microservice patterns:</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Day 1 -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl">
+              <span class="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1">Day 1</span>
+              <h4 class="text-white font-bold text-base mb-3">Single-Service Mastery</h4>
+              <ul class="text-xs space-y-2 text-slate-400">
+                <li>• <strong>Morning (Hrs 1–4)</strong>: Java 21 modern idioms (Records, Pattern Matching, Virtual Threads, Streams, Optionals). Maven setup.</li>
+                <li>• <strong>Afternoon (Hrs 5–8)</strong>: Build <code>ProductService</code>. Implement <code>@RestController</code>, Request/Response Records, <code>@Valid</code>, and RFC 7807 advice.</li>
+                <li>• <strong>Evening (Hrs 9–12)</strong>: Spring Data JPA + Hibernate. Configure Postgres, eliminate N+1 queries via <code>JOIN FETCH</code>, and master <code>@Transactional</code>.</li>
+              </ul>
+            </div>
+
+            <!-- Day 2 -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl">
+              <span class="text-xs font-bold text-purple-400 uppercase tracking-wider block mb-1">Day 2</span>
+              <h4 class="text-white font-bold text-base mb-3">Multiservice & Events</h4>
+              <ul class="text-xs space-y-2 text-slate-400">
+                <li>• <strong>Morning (Hrs 13–16)</strong>: Monorepo layout. Build <code>OrderService</code> & <code>InventoryService</code>. Connect via <code>api-gateway</code> and OpenFeign.</li>
+                <li>• <strong>Afternoon (Hrs 17–19)</strong>: Resiliency with <strong>Resilience4j</strong> (Circuit Breakers, Timeouts, and Fallbacks).</li>
+                <li>• <strong>Evening (Hrs 20–24)</strong>: Kafka event bus. Run Kafka via Docker Compose. Implement <code>OrderPlacedEvent</code> producer & consumers. Outbox pattern.</li>
+              </ul>
+            </div>
+
+            <!-- Day 3 -->
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl">
+              <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider block mb-1">Day 3</span>
+              <h4 class="text-white font-bold text-base mb-3">Security, Observability & Ops</h4>
+              <ul class="text-xs space-y-2 text-slate-400">
+                <li>• <strong>Morning (Hrs 25–28)</strong>: <strong>Spring Security 6</strong> stateless OAuth2/JWT Resource Server with <code>@PreAuthorize</code>. Feign token forwarding.</li>
+                <li>• <strong>Afternoon (Hrs 29–31)</strong>: Production Observability. Spring Boot Actuator, Micrometer Tracing + OpenTelemetry + Zipkin, MDC logging.</li>
+                <li>• <strong>Evening (Hrs 32–36)</strong>: Integration testing with <strong>Testcontainers</strong>. Multi-stage Docker packaging. Senior interview prep.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 17 -->
+      <!-- ========================================== -->
+      <section id="sec-17" class="mb-16 scroll-mt-20">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2.5">
+            <span class="text-blue-500 font-mono text-lg">17.</span> Node.js $\to$ Spring Boot Rosetta Dictionary
+          </h2>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleModule(17)" class="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-0 w-4 h-4"> Mark Done
+          </label>
+        </div>
+
+        <div class="mt-5 space-y-5 text-slate-300 text-sm leading-relaxed">
+          <div class="overflow-x-auto rounded-xl border border-slate-800 shadow-xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-800/90 text-slate-200 font-semibold uppercase tracking-wider border-b border-slate-700">
+                <tr>
+                  <th class="p-3.5">Task</th>
+                  <th class="p-3.5">Node.js (Express / NestJS)</th>
+                  <th class="p-3.5">Java Spring Boot 3</th>
+                  <th class="p-3.5 text-center">Quick Copy</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/70 text-slate-300 font-mono">
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 text-white font-sans font-medium">Log Output</td>
+                  <td class="p-3.5 text-slate-400">console.log() / pino</td>
+                  <td class="p-3.5 text-emerald-400">@Slf4j -&gt; log.info("{}", val)</td>
+                  <td class="p-3.5 text-center"><button onclick="quickCopy('@Slf4j')" class="text-blue-400 hover:text-blue-300 font-sans">Copy</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 text-white font-sans font-medium">HTTP GET Endpoint</td>
+                  <td class="p-3.5 text-slate-400">@Get('/items')</td>
+                  <td class="p-3.5 text-emerald-400">@GetMapping("/items")</td>
+                  <td class="p-3.5 text-center"><button onclick="quickCopy('@GetMapping(\"/items\")')" class="text-blue-400 hover:text-blue-300 font-sans">Copy</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 text-white font-sans font-medium">Route Param</td>
+                  <td class="p-3.5 text-slate-400">req.params.id / @Param('id')</td>
+                  <td class="p-3.5 text-emerald-400">@PathVariable Long id</td>
+                  <td class="p-3.5 text-center"><button onclick="quickCopy('@PathVariable Long id')" class="text-blue-400 hover:text-blue-300 font-sans">Copy</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 text-white font-sans font-medium">Query Param</td>
+                  <td class="p-3.5 text-slate-400">@Query('page') page: number</td>
+                  <td class="p-3.5 text-emerald-400">@RequestParam(defaultValue = "0") int page</td>
+                  <td class="p-3.5 text-center"><button onclick="quickCopy('@RequestParam int page')" class="text-blue-400 hover:text-blue-300 font-sans">Copy</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 text-white font-sans font-medium">Request Body</td>
+                  <td class="p-3.5 text-slate-400">@Body() body: CreateDto</td>
+                  <td class="p-3.5 text-emerald-400">@Valid @RequestBody CreateRequest body</td>
+                  <td class="p-3.5 text-center"><button onclick="quickCopy('@Valid @RequestBody')" class="text-blue-400 hover:text-blue-300 font-sans">Copy</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 text-white font-sans font-medium">Environment Variable</td>
+                  <td class="p-3.5 text-slate-400">process.env.DB_HOST</td>
+                  <td class="p-3.5 text-emerald-400">@Value("${spring.datasource.host}")</td>
+                  <td class="p-3.5 text-center"><button onclick="quickCopy('@Value(\"${property}\")')" class="text-blue-400 hover:text-blue-300 font-sans">Copy</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 text-white font-sans font-medium">Execute on Startup</td>
+                  <td class="p-3.5 text-slate-400">app.listen(() =&gt; { ... })</td>
+                  <td class="p-3.5 text-emerald-400">@EventListener(ApplicationReadyEvent.class)</td>
+                  <td class="p-3.5 text-center"><button onclick="quickCopy('@EventListener(ApplicationReadyEvent.class)')" class="text-blue-400 hover:text-blue-300 font-sans">Copy</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 text-white font-sans font-medium">Background Cron</td>
+                  <td class="p-3.5 text-slate-400">node-cron / BullMQ</td>
+                  <td class="p-3.5 text-emerald-400">@Scheduled(cron = "0 0 * * * *")</td>
+                  <td class="p-3.5 text-center"><button onclick="quickCopy('@Scheduled(cron = \"0 0 * * * *\")')" class="text-blue-400 hover:text-blue-300 font-sans">Copy</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 text-white font-sans font-medium">Find Record in DB</td>
+                  <td class="p-3.5 text-slate-400">prisma.user.findUnique({ where: { id } })</td>
+                  <td class="p-3.5 text-emerald-400">userRepository.findById(id) -&gt; Optional</td>
+                  <td class="p-3.5 text-center"><button onclick="quickCopy('userRepository.findById(id)')" class="text-blue-400 hover:text-blue-300 font-sans">Copy</button></td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-3.5 text-white font-sans font-medium">String Formatting</td>
+                  <td class="p-3.5 text-slate-400">`Hello ${name}`</td>
+                  <td class="p-3.5 text-emerald-400">"Hello %s".formatted(name)</td>
+                  <td class="p-3.5 text-center"><button onclick="quickCopy('\"Hello %s\".formatted(name)')" class="text-blue-400 hover:text-blue-300 font-sans">Copy</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Interactive JavaScript Logic -->
+  <script>
+    let sidebarOpen = true;
+
+    // Toggle Sidebar visibility and smoothly recenter content
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const wrapper = document.getElementById('main-wrapper');
+      const overlay = document.getElementById('sidebar-overlay');
+      const toggleIcon = document.getElementById('toggle-icon-open');
+
+      sidebarOpen = !sidebarOpen;
+
+      if (sidebarOpen) {
+        sidebar.classList.remove('-translate-x-full');
+        wrapper.classList.add('lg:pl-80');
+        overlay.classList.remove('hidden');
+        toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        wrapper.classList.remove('lg:pl-80');
+        overlay.classList.add('hidden');
+        toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>';
+      }
+    }
+
+    // Auto-collapse sidebar on smaller screens on first load
+    if (window.innerWidth < 1024) {
+      toggleSidebar();
+    }
+
+    // Keyboard shortcut (Ctrl + B or Alt + S) to toggle sidebar
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey && e.key === 'b') || (e.altKey && e.key === 's')) {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    });
+
+    // Copy pre code contents
+    function copyCode(btn) {
+      const codeBlock = btn.closest('.bg-slate-900').querySelector('pre code');
+      const text = codeBlock.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Code block copied to clipboard!");
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `
+          <svg class="w-3.5 h-3.5 text-emerald-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <span class="text-emerald-400">Copied!</span>
+        `;
+        setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+      });
+    }
+
+    // Copy raw mermaid syntax
+    function copyRawMermaid(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      navigator.clipboard.writeText(el.value.trim()).then(() => {
+        showToast("Mermaid diagram code copied!");
+      });
+    }
+
+    // Quick copy helper
+    function quickCopy(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Copied: " + text);
+      });
+    }
+
+    // Toast Notification
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2400);
+    }
+
+    // Sprint Progress Checklist
+    const totalModules = 17;
+    let completedSet = new Set();
+
+    function toggleModule(id) {
+      if (completedSet.has(id)) {
+        completedSet.delete(id);
+      } else {
+        completedSet.add(id);
+      }
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const count = completedSet.size;
+      const pct = Math.round((count / totalModules) * 100);
+      document.getElementById('progress-bar').style.width = pct + '%';
+      document.getElementById('progress-pct').innerText = pct + '%';
+      document.getElementById('tracker-text').innerText = `${count} of ${totalModules} modules completed`;
+    }
+
+    // Day Jump Helper
+    function filterDay(day) {
+      if (day === 'day1') location.href = '#sec-1';
+      else if (day === 'day2') location.href = '#sec-6';
+      else if (day === 'day3') location.href = '#sec-11';
+    }
+
+    // Real-time Search Filter
+    document.getElementById('search-input').addEventListener('input', function(e) {
+      const q = e.target.value.toLowerCase().trim();
+      const sections = document.querySelectorAll('main section');
+      sections.forEach(sec => {
+        const text = sec.innerText.toLowerCase();
+        sec.style.display = text.includes(q) ? 'block' : 'none';
+      });
+    });
+
+    // Scrollspy for active navigation link
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('main section');
+      let current = '';
+      sections.forEach(sec => {
+        const top = sec.offsetTop;
+        if (window.scrollY >= top - 180) {
+          current = sec.getAttribute('id');
+        }
+      });
+      document.querySelectorAll('.nav-item').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

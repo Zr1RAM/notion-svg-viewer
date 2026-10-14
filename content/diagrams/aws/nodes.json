@@ -1,0 +1,370 @@
+{
+  "container": {
+    "title": "Application / Docker Container",
+    "category": "Compute & Packaging",
+    "badge": "Compute Workload",
+    "summary": "Lightweight, standalone execution environment packaging application code, libraries, runtime, and configuration.",
+    "details": "Containers encapsulate the microservice application so it runs consistently across local development, staging, and production environments. In this architecture, containers run your core backend API and background tasks.",
+    "searchTerms": [
+      "Docker Containers",
+      "Containerization",
+      "Microservices Architecture",
+      "Twelve-Factor App"
+    ],
+    "architectureRole": "Packaged as a Docker image, pushed to Amazon ECR, and orchestrated across servers using Amazon ECS."
+  },
+  "ecr": {
+    "title": "Amazon ECR (Elastic Container Registry)",
+    "category": "Containers & Registry",
+    "badge": "Artifact Storage",
+    "summary": "Fully managed, secure container image registry for storing, managing, and deploying Docker images.",
+    "details": "ECR provides encrypted storage, image scanning for CVE vulnerabilities, and high availability. It integrates natively with ECS and EKS for automated zero-downtime deployment pipelines.\n\n• Best for: Version controlling application builds and securely passing images to deployment tools.\n• The Catch: It is strictly storage; pushing an image to ECR does nothing until a compute service like ECS pulls and executes it.",
+    "searchTerms": [
+      "Amazon ECR",
+      "Container Registry",
+      "Image Scanning",
+      "Docker Image Versioning",
+      "Lifecycle Policies"
+    ],
+    "architectureRole": "Receives container builds from CI/CD and acts as the secure source repository from which ECS pulls images."
+  },
+  "ecs": {
+    "title": "Amazon ECS (Elastic Container Service)",
+    "category": "Compute & Orchestration",
+    "badge": "Container Orchestrator",
+    "summary": "Highly scalable container management and orchestration service that schedules and maintains Docker containers.",
+    "details": "If a container crashes or becomes unhealthy, ECS automatically terminates and restarts it to maintain desired task counts.\n\nLaunch Types:\n1. EC2 Launch Type: ECS places and manages containers on virtual machine instances that you provision, configure, and maintain.\n2. AWS Fargate (Serverless): AWS completely provisions and manages the underlying servers; you only pay for the exact CPU and memory consumed by each container.",
+    "searchTerms": [
+      "Amazon ECS",
+      "AWS Fargate",
+      "ECS Task Definition",
+      "ECS Service",
+      "Cluster Auto Scaling"
+    ],
+    "architectureRole": "Executes backend container tasks behind the Application Load Balancer and interacts with RDS, ElastiCache, and SQS."
+  },
+  "rds": {
+    "title": "Amazon RDS (Relational Database Service)",
+    "category": "Databases",
+    "badge": "Managed Relational DB",
+    "summary": "Managed relational database engine supporting PostgreSQL, MySQL, MariaDB, and Amazon Aurora.",
+    "details": "Automates time-consuming administrative tasks such as hardware provisioning, database setup, automated backups, point-in-time recovery, security patching, and multi-AZ failover for high availability.",
+    "searchTerms": [
+      "Amazon RDS",
+      "Aurora Serverless",
+      "Multi-AZ Deployment",
+      "Read Replicas",
+      "Database Subnet Groups"
+    ],
+    "architectureRole": "Stores relational structured application data, queried directly by ECS containers and Lambda backend functions."
+  },
+  "sqs": {
+    "title": "Amazon SQS (Simple Queue Service)",
+    "category": "Application Integration",
+    "badge": "Message Queuing",
+    "summary": "Fully managed message queuing service enabling decoupling and independent scaling of distributed services.",
+    "details": "SQS eliminates complexity associated with managing messaging middleware. It handles asynchronous job buffering with dead-letter queues (DLQs) for fault tolerance.\n\n• Standard Queues: Nearly unlimited throughput with best-effort ordering and at-least-once delivery.\n• FIFO Queues: Guaranteed first-in-first-out ordering and exactly-once processing.",
+    "searchTerms": [
+      "Amazon SQS",
+      "Message Queue",
+      "Dead Letter Queue (DLQ)",
+      "Decoupled Architecture",
+      "SQS Visibility Timeout"
+    ],
+    "architectureRole": "Buffers background and long-running requests from ECS or API Gateway to be consumed asynchronously by worker Lambda functions."
+  },
+  "lambda": {
+    "title": "AWS Lambda",
+    "category": "Serverless Compute",
+    "badge": "Serverless Functions",
+    "summary": "Zero-server compute service that runs your application code in response to events and automatically scales to demand.",
+    "details": "Lambda executes code only when triggered, charging only for the compute time consumed in milliseconds. In this architecture, Lambda serves two crucial roles:\n1. Event-driven post-processing (e.g. triggered automatically when a user uploads an object to S3).\n2. Asynchronous task execution consuming queued messages from SQS for operations taking 5–15 minutes.",
+    "searchTerms": [
+      "AWS Lambda",
+      "Serverless Architecture",
+      "S3 Event Notifications",
+      "Lambda Concurrency",
+      "Cold Starts"
+    ],
+    "architectureRole": "Triggered by S3 upload events and SQS queue items to process data and send notification alerts via SES or WebSockets."
+  },
+  "ses": {
+    "title": "Amazon SES (Simple Email Service)",
+    "category": "Customer Engagement",
+    "badge": "Email Service",
+    "summary": "Cost-effective, high-deliverability email service for sending transactional, operational, and marketing emails.",
+    "details": "Provides dedicated IP options, DKIM/SPF reputation tracking, deliverability dashboards, and bounce/complaint handling to ensure communications reach user inboxes reliably.",
+    "searchTerms": [
+      "Amazon SES",
+      "Transactional Email",
+      "DKIM / SPF Authentication",
+      "Email Deliverability",
+      "SES SMTP"
+    ],
+    "architectureRole": "Dispatched by worker Lambdas to send task completion emails, account confirmations, and transactional receipts."
+  },
+  "elasticache": {
+    "title": "Amazon ElastiCache",
+    "category": "In-Memory Database & Caching",
+    "badge": "In-Memory Cache",
+    "summary": "Ultra-fast, fully managed in-memory data store supporting Redis and Memcached for microsecond response times.",
+    "details": "Greatly accelerates read-heavy workloads and reduces database load by caching frequently requested database queries, user session states, rate limits, and real-time leaderboards.",
+    "searchTerms": [
+      "Amazon ElastiCache",
+      "Redis Cache",
+      "In-Memory Data Store",
+      "Read-Through Caching",
+      "Session Store"
+    ],
+    "architectureRole": "Caches hot data for ECS and Lambda to offload repetitive read queries from Amazon RDS."
+  },
+  "sns": {
+    "title": "Amazon SNS (Simple Notification Service)",
+    "category": "Application Integration",
+    "badge": "Pub/Sub Messaging",
+    "summary": "Fully managed pub/sub messaging service for high-throughput, fan-out event distribution.",
+    "details": "Publishers send messages to an SNS topic, and subscribers (Amazon SQS queues, AWS Lambda functions, HTTP endpoints, mobile push, and SMS) automatically receive immediate copies.",
+    "searchTerms": [
+      "Amazon SNS",
+      "Pub/Sub Fanout",
+      "Push Notifications",
+      "SNS Topics",
+      "Message Filtering"
+    ],
+    "architectureRole": "Fans out system events and status changes to multiple consumers, queues, and external webhook notification targets."
+  },
+  "elasticache_sns": {
+    "title": "In-Memory Cache & Pub/Sub (ElastiCache / SNS)",
+    "category": "Performance & Messaging",
+    "badge": "Cache & Event Hub",
+    "summary": "Combined caching and event distribution cluster managing state speed and real-time event dissemination.",
+    "details": "This composite cluster provides both microsecond caching with ElastiCache (Redis) and event fan-out with SNS. In contrast to WebSockets, this pattern allows internal services to broadcast state updates across clusters.",
+    "searchTerms": [
+      "ElastiCache Redis",
+      "Amazon SNS",
+      "Event-Driven Caching",
+      "Pub/Sub Fanout"
+    ],
+    "architectureRole": "Provides caching for database query offloading alongside pub/sub event broadcasting for internal microservices."
+  },
+  "cloudfront": {
+    "title": "Amazon CloudFront (CDN)",
+    "category": "Networking & Content Delivery",
+    "badge": "Global Edge Network",
+    "summary": "Global Content Delivery Network (CDN) delivering data, videos, APIs, and static assets with low latency and high speed.",
+    "details": "CloudFront routes traffic to the nearest global Point of Presence (Edge Location). It securely terminates TLS/SSL at the edge, compresses assets, and caches S3 static content and web applications worldwide.",
+    "searchTerms": [
+      "Amazon CloudFront",
+      "Content Delivery Network",
+      "Edge Locations",
+      "Origin Access Control (OAC)",
+      "TTL Caching"
+    ],
+    "architectureRole": "Distributes static web frontend assets cached from Amazon S3 and proxies dynamic API traffic toward the load balancer."
+  },
+  "s3": {
+    "title": "Amazon S3 (Simple Storage Service)",
+    "category": "Storage",
+    "badge": "Object Storage",
+    "summary": "Industry-leading object storage designed for 99.999999999% (11 9's) data durability and unlimited scalability.",
+    "details": "Stores files, images, documents, backups, and static website assets.\n\n• Pre-Signed URLs: Allows clients to securely upload directly (Pre-Signed POST) or download (Pre-Signed GET) without routing heavy binary payloads through application servers.",
+    "searchTerms": [
+      "Amazon S3",
+      "Pre-Signed URLs",
+      "Bucket Policies",
+      "S3 Lifecycle Management",
+      "Cross-Region Replication"
+    ],
+    "architectureRole": "Stores user file uploads directly via Pre-Signed URLs and triggers worker Lambdas automatically upon file landing."
+  },
+  "cloudwatch": {
+    "title": "Amazon CloudWatch",
+    "category": "Management & Governance",
+    "badge": "Monitoring & Telemetry",
+    "summary": "Centralized observability, logging, metrics collection, and alerting service for AWS resources and cloud workloads.",
+    "details": "Aggregates logs from ECS containers, Lambda runs, API Gateway, and RDS. Generates alarms based on metric thresholds (CPU, memory, HTTP 5xx errors) and triggers auto-scaling or incident notifications.",
+    "searchTerms": [
+      "Amazon CloudWatch",
+      "CloudWatch Logs Insights",
+      "CloudWatch Alarms",
+      "Metric Filters",
+      "Observability"
+    ],
+    "architectureRole": "Monitors health metrics across all infrastructure and collects container & serverless logs for debugging and auditing."
+  },
+  "route53": {
+    "title": "Amazon Route 53",
+    "category": "Networking & DNS",
+    "badge": "Authoritative DNS",
+    "summary": "Highly available and scalable cloud Domain Name System (DNS) web service running on a global anycast network.",
+    "details": "Translates human-readable names (e.g., example.com) into numeric IP addresses. Provides health checks, latency-based routing, geo-DNS routing, and alias records to CloudFront and Application Load Balancers.",
+    "searchTerms": [
+      "Amazon Route 53",
+      "DNS Hosted Zones",
+      "Alias Records",
+      "Health Checks & Failover",
+      "Anycast Routing"
+    ],
+    "architectureRole": "Top-level DNS resolving user domain queries and pointing directly to CloudFront or external CDN edge distributions."
+  },
+  "acm": {
+    "title": "AWS Certificate Manager (ACM)",
+    "category": "Security & Compliance",
+    "badge": "SSL/TLS Certificates",
+    "summary": "Service that provisions, manages, and automatically renews public and private SSL/TLS certificates.",
+    "details": "Provides free public TLS certificates for use with AWS services like CloudFront, API Gateway, and Application Load Balancers, with zero-touch automatic DNS validation and renewals.",
+    "searchTerms": [
+      "AWS Certificate Manager",
+      "SSL/TLS Certificates",
+      "Automated Renewal",
+      "DNS Validation",
+      "HTTPS Encryption"
+    ],
+    "architectureRole": "Secures all inbound HTTPS connections by binding validated TLS certificates to CloudFront and Application Load Balancers."
+  },
+  "elb": {
+    "title": "AWS Elastic Load Balancing (ELB)",
+    "category": "Networking & Load Balancing",
+    "badge": "Traffic Balancer",
+    "summary": "Automatically distributes incoming application traffic across multiple targets and Availability Zones.",
+    "details": "Ensures high fault tolerance by continuously health-checking backend instances/containers and routing requests only to healthy targets.",
+    "searchTerms": [
+      "Elastic Load Balancing",
+      "High Availability",
+      "Health Checks",
+      "Multi-AZ Routing"
+    ],
+    "architectureRole": "Distributes incoming traffic across backend container clusters running in multiple Availability Zones."
+  },
+  "alb": {
+    "title": "Application Load Balancer (ALB)",
+    "category": "Networking & Load Balancing",
+    "badge": "Layer 7 Load Balancer",
+    "summary": "Feature-rich Layer 7 load balancer routing HTTP/HTTPS traffic based on advanced request content attributes.",
+    "details": "Supports path-based routing (/api/* vs /static/*), host-based routing, WebSocket protocol routing, TLS termination, and direct integration with Amazon ECS container dynamic port mappings.",
+    "searchTerms": [
+      "Application Load Balancer",
+      "Path-Based Routing",
+      "Target Groups",
+      "Dynamic Port Mapping",
+      "Sticky Sessions"
+    ],
+    "architectureRole": "Receives decrypted traffic from CloudFront/ACM and routes REST API requests to healthy ECS container tasks."
+  },
+  "elb_alb": {
+    "title": "Elastic Load Balancing (ELB / ALB)",
+    "category": "Networking & Load Balancing",
+    "badge": "Load Balancer Cluster",
+    "summary": "Scalable traffic ingress balancing Layer 7 requests across redundant container instances and microservices.",
+    "details": "Combines Application Load Balancers with target groups to handle health checking, TLS termination, and traffic distribution to backend ECS containers across multiple availability zones.",
+    "searchTerms": [
+      "ALB",
+      "Elastic Load Balancing",
+      "Target Groups",
+      "Zero-Downtime Deployments"
+    ],
+    "architectureRole": "Acts as the single entry point for API traffic reaching the backend container infrastructure."
+  },
+  "iam": {
+    "title": "AWS IAM (Identity and Access Management)",
+    "category": "Security & Compliance",
+    "badge": "Access Control & Roles",
+    "summary": "Fine-grained permission management controlling authentication and authorization for users, services, and workloads.",
+    "details": "Enforces the principle of least privilege. Uses IAM Roles with temporary credentials for ECS tasks and Lambda functions, avoiding hard-coded AWS access keys in source code.",
+    "searchTerms": [
+      "AWS IAM",
+      "IAM Roles for Tasks",
+      "Least Privilege Principle",
+      "IAM Policies",
+      "Temporary Credentials"
+    ],
+    "architectureRole": "Grants granular permissions allowing ECS containers and Lambda functions to securely access S3, RDS, SQS, and CloudWatch."
+  },
+  "parameter_store": {
+    "title": "AWS Systems Manager Parameter Store",
+    "category": "Management & Governance",
+    "badge": "Configuration & Secrets",
+    "summary": "Secure, hierarchical storage for configuration data management and password/secret storage.",
+    "details": "Stores environment variables, API tokens, database connection strings, and license keys. Encrypted with AWS KMS and integrated directly into ECS task definition environment injection.",
+    "searchTerms": [
+      "SSM Parameter Store",
+      "AWS KMS Encryption",
+      "Configuration Management",
+      "Secrets Management"
+    ],
+    "architectureRole": "Supplies encrypted database passwords and API configuration keys to containers and Lambda workers on boot."
+  },
+  "opensearch": {
+    "title": "Amazon OpenSearch Service",
+    "category": "Analytics & Search",
+    "badge": "Search & Analytics Engine",
+    "summary": "Managed search and analytics engine derived from Elasticsearch for full-text search, filtering, and log analytics.",
+    "details": "Enables sub-second search queries across millions of records with autocomplete, fuzzy matching, faceted filtering, geospatial queries, and vector similarity search.",
+    "searchTerms": [
+      "Amazon OpenSearch",
+      "Elasticsearch",
+      "Full-Text Search",
+      "Log Analytics",
+      "Vector Search"
+    ],
+    "architectureRole": "Powers high-speed application search queries and real-time log exploration alongside the primary relational database."
+  },
+  "api_gateway": {
+    "title": "Amazon API Gateway (V2 WebSocket / HTTP)",
+    "category": "Networking & APIs",
+    "badge": "Managed API Entryway",
+    "summary": "Fully managed API hosting service supporting real-time two-way WebSocket connections and HTTP APIs.",
+    "details": "Maintains persistent, stateful WebSocket connections with client devices. When long-running tasks finish, backend workers broadcast immediate notifications back to users without requiring client polling.\n\n• Cheaper & simpler than traditional custom-built WebSocket clusters running on continuous EC2 instances.",
+    "searchTerms": [
+      "Amazon API Gateway",
+      "WebSocket API",
+      "Two-Way Streaming",
+      "HTTP APIs",
+      "Connection Management"
+    ],
+    "architectureRole": "Maintains active WebSocket links with clients to push notifications when asynchronous tasks (5–15 min) finish."
+  },
+  "cloudflare": {
+    "title": "Cloudflare",
+    "category": "Edge & Security",
+    "badge": "External Edge Proxy",
+    "summary": "Global CDN, DNS, and DDoS protection layer positioned at the Internet perimeter before AWS origins.",
+    "details": "Provides edge caching, Web Application Firewall (WAF) rule sets, bot management, and SSL termination before routing legitimate traffic to AWS CloudFront or Route 53.",
+    "searchTerms": [
+      "Cloudflare",
+      "Edge Computing",
+      "WAF (Web Application Firewall)",
+      "DDoS Mitigation",
+      "Edge DNS"
+    ],
+    "architectureRole": "Acts as the outermost internet security shield and DNS proxy guarding the architecture against malicious traffic."
+  },
+  "user": {
+    "title": "End User / Web Client",
+    "category": "Actors & Clients",
+    "badge": "Client Application",
+    "summary": "End-user web browser or mobile client initiating HTTP requests, WebSocket streams, and file transfers.",
+    "details": "Clients fetch the static UI from CloudFront, connect to API Gateway via WebSockets for real-time progress updates, and upload files directly to Amazon S3 via Pre-Signed POST URLs without loading application servers.",
+    "searchTerms": [
+      "Client-Side Architecture",
+      "Pre-Signed POST Upload",
+      "WebSocket Client",
+      "Single Page App (SPA)"
+    ],
+    "architectureRole": "Interacts with CloudFront for assets, API Gateway for live WebSocket alerts, and S3 for direct file uploads."
+  },
+  "admin": {
+    "title": "Administrator Client",
+    "category": "Actors & Clients",
+    "badge": "Privileged User",
+    "summary": "System administrator or staff member accessing administrative panels, metrics dashboards, and configuration tools.",
+    "details": "Admins access operational views, monitor CloudWatch metrics, inspect OpenSearch analytics, and manage application configurations stored in Parameter Store.",
+    "searchTerms": [
+      "Admin Console",
+      "RBAC (Role-Based Access Control)",
+      "Internal Tools",
+      "Operational Dashboards"
+    ],
+    "architectureRole": "Consumes administrative APIs and observability dashboards to monitor system health and perform operational duties."
+  }
+}

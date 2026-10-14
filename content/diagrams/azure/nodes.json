@@ -1,0 +1,371 @@
+{
+  "container": {
+    "title": "Application / Docker Container",
+    "category": "Compute & Packaging",
+    "badge": "Container Workload",
+    "summary": "Lightweight, standalone execution environment packaging application code, dependencies, and configuration.",
+    "details": "Containers encapsulate the microservice application so it runs consistently across development, staging, and Azure production environments. In this architecture, containers run your core backend API and background tasks.",
+    "searchTerms": [
+      "Docker Containers",
+      "Azure Containers",
+      "Microservices Architecture",
+      "Twelve-Factor App"
+    ],
+    "architectureRole": "Packaged as a Docker image, pushed to Azure Container Registry (ACR), and orchestrated across servers using Azure Container Apps (ACA)."
+  },
+  "ecr": {
+    "title": "Azure Container Registry (ACR)",
+    "category": "Containers & Registry",
+    "badge": "Artifact Storage",
+    "summary": "Managed private Docker container registry based on open-source Docker Registry 2.0.",
+    "details": "Azure Container Registry stores and manages private container images and related artifacts.\n\n• Best for: Version controlling containerized application builds and securely delivering images to compute targets.\n• The Catch: It is strictly a storage registry; pushing an image does nothing until an orchestration service like Azure Container Apps or AKS pulls and runs it.",
+    "searchTerms": [
+      "Azure Container Registry",
+      "ACR Tasks",
+      "Image Vulnerability Scanning",
+      "Geo-replication",
+      "Helm Repositories"
+    ],
+    "architectureRole": "Receives container builds from CI/CD and acts as the secure source repository from which Azure Container Apps pulls images."
+  },
+  "ecs": {
+    "title": "Azure Container Apps (ACA)",
+    "category": "Compute & Orchestration",
+    "badge": "Container Orchestrator",
+    "summary": "Fully managed serverless container service built on Kubernetes and open-source standards like Dapr and KEDA.",
+    "details": "Enables deploying microservices and containerized apps without managing underlying cluster infrastructure.\n\nKey Features:\n1. Dynamic Auto-scaling: Scales on HTTP traffic, queue lengths (via KEDA), or CPU/memory metrics all the way to zero.\n2. Microservice Support: Built-in support for Dapr, distributed tracing, ingress traffic splitting, and revision management.",
+    "searchTerms": [
+      "Azure Container Apps",
+      "ACA Revisions",
+      "KEDA Auto Scaling",
+      "Dapr Microservices",
+      "Serverless Containers"
+    ],
+    "architectureRole": "Executes backend container tasks behind the Application Gateway and interacts with Azure Database, Redis Cache, and Service Bus."
+  },
+  "rds": {
+    "title": "Azure Database for PostgreSQL / MySQL",
+    "category": "Databases",
+    "badge": "Managed Relational DB",
+    "summary": "Fully managed enterprise relational database service with automated patching, high availability, and backups.",
+    "details": "Automates routine database management tasks including provisioning, automated backups, point-in-time restore, automated patching, scaling, and zone-redundant high availability.",
+    "searchTerms": [
+      "Azure Database for PostgreSQL",
+      "Flexible Server",
+      "Azure SQL Database",
+      "Read Replicas",
+      "Zone-Redundant HA"
+    ],
+    "architectureRole": "Stores relational structured application data, queried directly by Azure Container Apps and Azure Functions."
+  },
+  "sqs": {
+    "title": "Azure Service Bus (Queues)",
+    "category": "Application Integration",
+    "badge": "Enterprise Messaging",
+    "summary": "Fully managed enterprise message broker with message queues and publish-subscribe topics.",
+    "details": "Service Bus reliably decouples applications and services with message ordering, duplicate detection, and dead-letter queues (DLQs).\n\n• Queues: One-way message delivery guaranteeing First-In-First-Out (FIFO) and at-least-once or at-most-once processing.\n• Dead-Letter Sub-queues: Automatically captures unprocessable messages for auditing and retries.",
+    "searchTerms": [
+      "Azure Service Bus",
+      "Service Bus Queues",
+      "Dead-Letter Queue",
+      "KEDA Service Bus Trigger",
+      "Message Sessions"
+    ],
+    "architectureRole": "Buffers background and long-running requests from Container Apps to be consumed asynchronously by worker Azure Functions."
+  },
+  "lambda": {
+    "title": "Azure Functions",
+    "category": "Serverless Compute",
+    "badge": "Serverless Functions",
+    "summary": "Event-driven serverless compute platform enabling developers to run code without managing infrastructure.",
+    "details": "Azure Functions executes code in response to events and triggers, scaling automatically on demand.\n\nIn this architecture, Functions serve two core roles:\n1. Event-driven post-processing (triggered automatically via Event Grid when a user uploads a blob to Azure Storage).\n2. Asynchronous task execution consuming queued messages from Azure Service Bus for jobs taking 5–15 minutes.",
+    "searchTerms": [
+      "Azure Functions",
+      "Blob Storage Trigger",
+      "Service Bus Trigger",
+      "Serverless Compute",
+      "Consumption Plan"
+    ],
+    "architectureRole": "Triggered by Blob upload events and Service Bus queue messages to process data and push notifications via Web PubSub or Email."
+  },
+  "ses": {
+    "title": "Azure Communication Services (Email)",
+    "category": "Customer Engagement",
+    "badge": "Email Service",
+    "summary": "Fully managed communication service for sending transactional, operational, and customer alert emails.",
+    "details": "Provides scalable email delivery with custom domain support, SPF/DKIM authentication, delivery tracking, and analytics dashboards.",
+    "searchTerms": [
+      "Azure Communication Services",
+      "Transactional Email",
+      "Email Domains",
+      "SPF / DKIM",
+      "Email Analytics"
+    ],
+    "architectureRole": "Dispatched by worker Functions to send task completion emails, verification links, and customer notifications."
+  },
+  "elasticache": {
+    "title": "Azure Cache for Redis",
+    "category": "In-Memory Database & Caching",
+    "badge": "In-Memory Cache",
+    "summary": "Fully managed in-memory data store based on Redis for sub-millisecond data retrieval.",
+    "details": "Significantly reduces database latency and improves application throughput by caching frequently queried database results, user session states, rate limits, and real-time data.",
+    "searchTerms": [
+      "Azure Cache for Redis",
+      "Redis Enterprise",
+      "In-Memory Data Store",
+      "Session State Provider",
+      "Cache Aside Pattern"
+    ],
+    "architectureRole": "Caches hot data for Container Apps and Functions to offload repetitive read queries from Azure Database."
+  },
+  "sns": {
+    "title": "Azure Event Grid",
+    "category": "Application Integration",
+    "badge": "Pub/Sub Event Routing",
+    "summary": "Highly scalable, serverless event broker for building reactive, event-driven applications.",
+    "details": "Event Grid connects data sources and event handlers with near real-time event delivery. Publishers post events to topics, and Event Grid fans them out to multiple subscribers (Functions, Service Bus, webhooks).",
+    "searchTerms": [
+      "Azure Event Grid",
+      "Event-Driven Architecture",
+      "CloudEvents Schema",
+      "Event Subscriptions",
+      "Dead-lettering"
+    ],
+    "architectureRole": "Fans out system status changes and operational events to multiple backend consumers and notification webhooks."
+  },
+  "elasticache_sns": {
+    "title": "In-Memory Cache & Event Hub (Redis / Event Grid)",
+    "category": "Performance & Messaging",
+    "badge": "Cache & Event Hub",
+    "summary": "Combined caching and event distribution cluster managing state speed and real-time event dissemination.",
+    "details": "This composite cluster pairs sub-millisecond caching via Azure Cache for Redis with high-throughput event routing via Event Grid for internal service broadcasting.",
+    "searchTerms": [
+      "Azure Cache for Redis",
+      "Azure Event Grid",
+      "Event-Driven Caching",
+      "Reactive Microservices"
+    ],
+    "architectureRole": "Provides caching for database query offloading alongside pub/sub event broadcasting for internal microservices."
+  },
+  "cloudfront": {
+    "title": "Azure Front Door / Azure CDN",
+    "category": "Networking & Content Delivery",
+    "badge": "Global Edge Network",
+    "summary": "Global, scalable entry-point that combines Content Delivery Network (CDN) and Web Application Firewall (WAF).",
+    "details": "Leverages Microsoft's global edge network to accelerate web application performance, cache static content close to users, terminate TLS at the edge, and inspect traffic for malicious threats.",
+    "searchTerms": [
+      "Azure Front Door",
+      "Azure CDN",
+      "Edge PoP",
+      "WAF Rules",
+      "Origin Groups",
+      "SSL Offloading"
+    ],
+    "architectureRole": "Distributes static web frontend assets cached from Azure Blob Storage and securely routes dynamic API traffic toward Application Gateway."
+  },
+  "s3": {
+    "title": "Azure Blob Storage",
+    "category": "Storage",
+    "badge": "Object Storage",
+    "summary": "Massively scalable and secure object storage for unstructured data, media, documents, and backups.",
+    "details": "Designed for 16 nines of durability with geo-redundancy options.\n\n• Shared Access Signatures (SAS): Grants clients restricted access rights to storage resources for direct uploads (SAS POST) or downloads (SAS GET) without routing heavy payloads through application servers.",
+    "searchTerms": [
+      "Azure Blob Storage",
+      "Shared Access Signatures (SAS)",
+      "Lifecycle Management",
+      "Blob Storage Tiers",
+      "Geo-Redundant Storage (GRS)"
+    ],
+    "architectureRole": "Stores user file uploads directly via SAS URLs and triggers worker Azure Functions automatically upon blob landing."
+  },
+  "cloudwatch": {
+    "title": "Azure Monitor & Log Analytics",
+    "category": "Management & Governance",
+    "badge": "Monitoring & Telemetry",
+    "summary": "Comprehensive monitoring solution for collecting, analyzing, and acting on telemetry from Azure and on-premises environments.",
+    "details": "Collects metrics, activity logs, and diagnostic traces from Container Apps, Functions, and Databases. Powers Application Insights, alert rules, and automated scaling actions.",
+    "searchTerms": [
+      "Azure Monitor",
+      "Log Analytics Workspace",
+      "Application Insights",
+      "Kusto Query Language (KQL)",
+      "Metric Alerts"
+    ],
+    "architectureRole": "Monitors health metrics across all infrastructure and collects container & serverless logs for debugging and auditing."
+  },
+  "route53": {
+    "title": "Azure DNS",
+    "category": "Networking & DNS",
+    "badge": "Authoritative DNS",
+    "summary": "High-performance, authoritative DNS hosting service backed by Microsoft's global network of name servers.",
+    "details": "Provides fast DNS lookups and high availability using anycast networking. Supports alias records pointing directly to Azure Front Door, Traffic Manager, or public IP addresses.",
+    "searchTerms": [
+      "Azure DNS",
+      "DNS Zones",
+      "Alias Records",
+      "Anycast Network",
+      "Private DNS Zones"
+    ],
+    "architectureRole": "Top-level DNS resolving user domain queries and pointing directly to Azure Front Door edge distribution."
+  },
+  "acm": {
+    "title": "App Service Certificates & Azure Key Vault",
+    "category": "Security & Compliance",
+    "badge": "SSL/TLS Certificates",
+    "summary": "Integrated certificate provisioning, storage, and automated lifecycle renewal service.",
+    "details": "Stores and manages SSL/TLS certificates with automated renewals, binding them securely to Azure Front Door and Application Gateway without exposing private keys.",
+    "searchTerms": [
+      "App Service Certificates",
+      "Azure Key Vault Certificates",
+      "Automated Renewal",
+      "TLS/SSL Offloading"
+    ],
+    "architectureRole": "Secures all inbound HTTPS connections by binding validated TLS certificates to Azure Front Door and Application Gateway."
+  },
+  "elb": {
+    "title": "Azure Load Balancer",
+    "category": "Networking & Load Balancing",
+    "badge": "Layer 4 Load Balancer",
+    "summary": "Ultra-low latency Layer 4 load balancer delivering high-throughput distribution for TCP/UDP traffic.",
+    "details": "Distributes incoming network traffic across backend virtual machine instances or container endpoints based on IP protocols and port health probes.",
+    "searchTerms": [
+      "Azure Load Balancer",
+      "Standard Load Balancer",
+      "Health Probes",
+      "High Availability Ports"
+    ],
+    "architectureRole": "Distributes incoming traffic across backend infrastructure and internal microservice endpoints."
+  },
+  "alb": {
+    "title": "Azure Application Gateway",
+    "category": "Networking & Load Balancing",
+    "badge": "Layer 7 Load Balancer",
+    "summary": "Web traffic load balancer that enables managing traffic to web applications based on HTTP request attributes.",
+    "details": "Supports URL path-based routing, multi-site hosting, cookie-based session affinity, SSL termination, and integrated Web Application Firewall (WAF).",
+    "searchTerms": [
+      "Azure Application Gateway",
+      "Path-Based Routing",
+      "Web Application Firewall (WAF)",
+      "Backend Pools",
+      "SSL Termination"
+    ],
+    "architectureRole": "Receives decrypted traffic from Azure Front Door and routes REST API requests to healthy Container App tasks."
+  },
+  "elb_alb": {
+    "title": "Ingress & Load Balancing (App Gateway / Azure LB)",
+    "category": "Networking & Load Balancing",
+    "badge": "Load Balancer Cluster",
+    "summary": "Traffic ingress and distribution cluster managing Layer 7 HTTP routing and Layer 4 load balancing.",
+    "details": "Combines Application Gateway for URL routing and WAF inspection with load-balanced backend pools for high availability across availability zones.",
+    "searchTerms": [
+      "Application Gateway",
+      "Azure Load Balancer",
+      "Backend Pools",
+      "Zone Redundancy"
+    ],
+    "architectureRole": "Acts as the single entry point for API traffic reaching the backend container infrastructure."
+  },
+  "iam": {
+    "title": "Microsoft Entra ID & Azure RBAC",
+    "category": "Security, Identity & Access",
+    "badge": "Access Control & Roles",
+    "summary": "Universal identity platform and role-based access control governing permissions for users and cloud services.",
+    "details": "Enforces least-privilege security using Managed Identities for Azure resources, allowing Container Apps and Functions to access Azure SQL, Storage, and Key Vault without storing credentials in code.",
+    "searchTerms": [
+      "Microsoft Entra ID",
+      "Managed Identities",
+      "Azure RBAC",
+      "Role Definitions",
+      "Least Privilege"
+    ],
+    "architectureRole": "Grants secure Managed Identities allowing Container Apps and Functions to access Blob Storage, SQL, and Service Bus."
+  },
+  "parameter_store": {
+    "title": "Azure App Configuration & Key Vault",
+    "category": "Management & Security",
+    "badge": "Configuration & Secrets",
+    "summary": "Centralized configuration management service paired with hardware security module (HSM) secrets storage.",
+    "details": "App Configuration centralizes application settings and feature flags, while Key Vault securely safeguards encryption keys, database passwords, and API secrets.",
+    "searchTerms": [
+      "Azure App Configuration",
+      "Azure Key Vault",
+      "Feature Flags",
+      "Secrets Management",
+      "Dynamic Refresh"
+    ],
+    "architectureRole": "Supplies encrypted database connection strings and configuration keys to containers and Functions on startup."
+  },
+  "opensearch": {
+    "title": "Azure AI Search (Cognitive Search)",
+    "category": "Analytics & Search",
+    "badge": "AI Search Engine",
+    "summary": "Enterprise search service with rich indexing, full-text search, and AI-powered vector similarity capabilities.",
+    "details": "Enables sub-second search queries across millions of documents with fuzzy matching, faceted navigation, geospatial filtering, semantic ranker, and vector search.",
+    "searchTerms": [
+      "Azure AI Search",
+      "Cognitive Search",
+      "Vector Search",
+      "Full-Text Search",
+      "Semantic Search"
+    ],
+    "architectureRole": "Powers high-speed application search queries and real-time faceted exploration alongside primary relational data."
+  },
+  "api_gateway": {
+    "title": "Azure Web PubSub / Azure SignalR",
+    "category": "Networking & Real-Time APIs",
+    "badge": "Managed Real-Time Hub",
+    "summary": "Fully managed real-time messaging service with native WebSocket support for bidirectional streaming.",
+    "details": "Maintains persistent, stateful WebSocket connections with client devices.\n\nWhen long-running asynchronous tasks (5–15 minutes) complete, backend worker Functions broadcast live completion notifications directly back to users without requiring client polling.",
+    "searchTerms": [
+      "Azure Web PubSub",
+      "Azure SignalR Service",
+      "WebSockets",
+      "Bidirectional Messaging",
+      "Live Updates"
+    ],
+    "architectureRole": "Maintains active WebSocket links with clients to push notifications when asynchronous tasks finish."
+  },
+  "cloudflare": {
+    "title": "Cloudflare",
+    "category": "Edge & Security",
+    "badge": "External Edge Proxy",
+    "summary": "Global CDN, DNS, and DDoS protection layer positioned at the Internet perimeter before Azure origins.",
+    "details": "Provides edge caching, Web Application Firewall (WAF) rule sets, bot management, and SSL termination before routing legitimate traffic to Azure Front Door or Azure DNS.",
+    "searchTerms": [
+      "Cloudflare",
+      "Edge Computing",
+      "WAF (Web Application Firewall)",
+      "DDoS Mitigation",
+      "Edge DNS"
+    ],
+    "architectureRole": "Acts as the outermost internet security shield and DNS proxy guarding the architecture against malicious traffic."
+  },
+  "user": {
+    "title": "End User / Web Client",
+    "category": "Actors & Clients",
+    "badge": "Client Application",
+    "summary": "End-user web browser or mobile client initiating HTTP requests, WebSocket streams, and file transfers.",
+    "details": "Clients fetch static assets from Azure Front Door, connect to Azure Web PubSub via WebSockets for real-time progress updates, and upload files directly to Azure Blob Storage via SAS URLs without loading application servers.",
+    "searchTerms": [
+      "Client-Side Architecture",
+      "Shared Access Signatures (SAS)",
+      "WebSocket Client",
+      "Single Page App (SPA)"
+    ],
+    "architectureRole": "Interacts with Azure Front Door for assets, Web PubSub for live alerts, and Blob Storage for direct uploads."
+  },
+  "admin": {
+    "title": "Administrator Client",
+    "category": "Actors & Clients",
+    "badge": "Privileged User",
+    "summary": "System administrator or staff member accessing administrative panels, metrics dashboards, and configuration tools.",
+    "details": "Admins access operational views, monitor Azure Monitor metrics, inspect AI Search analytics, and manage application configurations stored in Azure App Configuration and Key Vault.",
+    "searchTerms": [
+      "Admin Portal",
+      "Azure RBAC",
+      "Internal Management",
+      "Operational Dashboards"
+    ],
+    "architectureRole": "Consumes administrative APIs and observability dashboards to monitor system health and perform operational duties."
+  }
+}

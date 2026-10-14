@@ -1,0 +1,371 @@
+{
+  "container": {
+    "title": "Application / Docker Container",
+    "category": "Compute & Packaging",
+    "badge": "Container Workload",
+    "summary": "Lightweight, standalone execution environment packaging application code, libraries, runtime, and configuration.",
+    "details": "Containers encapsulate the microservice application so it runs consistently across local development, staging, and Google Cloud production environments. In this architecture, containers run your core backend API and background tasks.",
+    "searchTerms": [
+      "Docker Containers",
+      "Google Cloud Run",
+      "Microservices Architecture",
+      "Twelve-Factor App"
+    ],
+    "architectureRole": "Packaged as a Docker image, pushed to Google Artifact Registry, and orchestrated across servers using Google Cloud Run."
+  },
+  "ecr": {
+    "title": "Google Artifact Registry",
+    "category": "Containers & Registry",
+    "badge": "Artifact Storage",
+    "summary": "Fully managed, secure container image and language package registry on Google Cloud.",
+    "details": "Artifact Registry is the evolution of Container Registry (GCR), providing encrypted storage, vulnerability scanning, and IAM access controls.\n\n• Best for: Version controlling application container builds and securely delivering them to Cloud Run, GKE, and Compute Engine.\n• The Catch: It is strictly storage; pushing an image does nothing until a compute service like Cloud Run pulls and executes it.",
+    "searchTerms": [
+      "Google Artifact Registry",
+      "Container Registry (GCR)",
+      "Container Scanning",
+      "Docker Images",
+      "IAM Permissions"
+    ],
+    "architectureRole": "Receives container builds from CI/CD and acts as the secure source repository from which Cloud Run pulls images."
+  },
+  "ecs": {
+    "title": "Google Cloud Run",
+    "category": "Compute & Orchestration",
+    "badge": "Serverless Container Platform",
+    "summary": "Fully managed serverless compute platform that enables you to run containers directly on top of Google's scalable infrastructure.",
+    "details": "Cloud Run abstracts away all infrastructure management and automatically scales containers from zero to thousands of instances.\n\nKey Launch Configurations:\n1. Cloud Run Services: Responds to incoming HTTPS web requests, automatically scaling based on concurrent requests.\n2. Cloud Run Jobs: Executes batch processes or long-running operational tasks that run to completion without serving web traffic.",
+    "searchTerms": [
+      "Google Cloud Run",
+      "Serverless Containers",
+      "Concurrency Auto-scaling",
+      "Cloud Run Jobs",
+      "Knative"
+    ],
+    "architectureRole": "Executes backend container tasks behind the Cloud Load Balancer and interacts with Cloud SQL, Memorystore, and Cloud Tasks."
+  },
+  "rds": {
+    "title": "Google Cloud SQL / AlloyDB",
+    "category": "Databases",
+    "badge": "Managed Relational DB",
+    "summary": "Fully managed relational database service supporting PostgreSQL, MySQL, and SQL Server.",
+    "details": "Automates database provisioning, automated storage increases, automated backups, point-in-time recovery, security patching, and multi-zone high availability with automated failover.",
+    "searchTerms": [
+      "Google Cloud SQL",
+      "AlloyDB for PostgreSQL",
+      "High Availability",
+      "Read Pools",
+      "Private Services Access"
+    ],
+    "architectureRole": "Stores relational structured application data, queried directly by Cloud Run containers and Cloud Functions."
+  },
+  "sqs": {
+    "title": "Google Cloud Tasks",
+    "category": "Application Integration",
+    "badge": "Asynchronous Task Queue",
+    "summary": "Fully managed task queue service managing the execution, dispatch, and delivery of a large number of distributed tasks.",
+    "details": "Cloud Tasks handles asynchronous dispatching with granular rate-limiting, retry configurations, and deduplication.\n\n• Decoupled Task Execution: Dispatches discrete units of work to Cloud Run or Cloud Functions with guaranteed delivery.\n• Retry & Rate Limiting: Controls maximum dispatch rates to avoid overwhelming downstream services.",
+    "searchTerms": [
+      "Google Cloud Tasks",
+      "Task Queues",
+      "Rate Limiting",
+      "Exponential Backoff",
+      "Asynchronous Processing"
+    ],
+    "architectureRole": "Buffers background and long-running requests from Cloud Run to be consumed asynchronously by worker Cloud Functions."
+  },
+  "lambda": {
+    "title": "Google Cloud Functions",
+    "category": "Serverless Compute",
+    "badge": "Serverless Functions",
+    "summary": "Scalable, pay-as-you-go serverless execution environment for building event-driven applications.",
+    "details": "Cloud Functions runs backend code in response to events and HTTP triggers with zero server management.\n\nIn this architecture, Functions serve two core roles:\n1. Event-driven post-processing (triggered automatically by Cloud Storage when a user uploads an object).\n2. Asynchronous task execution consuming tasks from Cloud Tasks for jobs taking 5–15 minutes.",
+    "searchTerms": [
+      "Google Cloud Functions",
+      "Cloud Storage Triggers",
+      "Eventarc",
+      "Serverless Architecture",
+      "2nd Gen Functions"
+    ],
+    "architectureRole": "Triggered by Cloud Storage upload events and Cloud Tasks queue items to process data and push notifications."
+  },
+  "ses": {
+    "title": "SendGrid on GCP / Google Workspace SMTP",
+    "category": "Customer Engagement",
+    "badge": "Email Delivery",
+    "summary": "Managed cloud-based email delivery service providing high inbox placement for transactional emails.",
+    "details": "Provides reliable transactional email dispatch with custom domain authentication, SPF/DKIM verification, delivery analytics, and bounce handling.",
+    "searchTerms": [
+      "SendGrid on Google Cloud",
+      "Transactional Email",
+      "SPF / DKIM",
+      "Email Deliverability",
+      "Cloud Mail Delivery"
+    ],
+    "architectureRole": "Dispatched by worker Cloud Functions to send task completion emails, account confirmations, and transactional receipts."
+  },
+  "elasticache": {
+    "title": "Google Cloud Memorystore (Redis)",
+    "category": "In-Memory Database & Caching",
+    "badge": "In-Memory Cache",
+    "summary": "Fully managed in-memory data store service for Redis and Memcached providing sub-millisecond latency.",
+    "details": "Dramatically accelerates application responsiveness and reduces database load by caching hot data, session states, rate limits, and real-time leaderboards.",
+    "searchTerms": [
+      "Google Cloud Memorystore",
+      "Redis Cache",
+      "In-Memory Data Store",
+      "Read Replicas",
+      "VPC Peering"
+    ],
+    "architectureRole": "Caches hot data for Cloud Run and Cloud Functions to offload repetitive read queries from Cloud SQL."
+  },
+  "sns": {
+    "title": "Google Cloud Pub/Sub (Topics)",
+    "category": "Application Integration",
+    "badge": "Pub/Sub Messaging",
+    "summary": "Globally distributed, asynchronous messaging service that decouples services producing events from services processing events.",
+    "details": "Publishers push messages to a topic, and Pub/Sub delivers them to multiple fan-out subscribers (Cloud Functions, Cloud Run, Cloud Tasks) with automatic scaling.",
+    "searchTerms": [
+      "Google Cloud Pub/Sub",
+      "Pub/Sub Topics",
+      "Event Ingestion",
+      "Fan-out Pattern",
+      "Dead Letter Topics"
+    ],
+    "architectureRole": "Fans out system status changes and operational events to multiple backend consumers and notification webhooks."
+  },
+  "elasticache_sns": {
+    "title": "In-Memory Cache & Pub/Sub (Memorystore / Cloud Pub/Sub)",
+    "category": "Performance & Messaging",
+    "badge": "Cache & Event Hub",
+    "summary": "Combined caching and event distribution cluster managing state speed and real-time event dissemination.",
+    "details": "This composite cluster pairs sub-millisecond caching via Cloud Memorystore (Redis) with global asynchronous event distribution via Cloud Pub/Sub.",
+    "searchTerms": [
+      "Cloud Memorystore",
+      "Cloud Pub/Sub",
+      "Event-Driven Caching",
+      "Reactive Microservices"
+    ],
+    "architectureRole": "Provides caching for database query offloading alongside pub/sub event broadcasting for internal microservices."
+  },
+  "cloudfront": {
+    "title": "Google Cloud CDN",
+    "category": "Networking & Content Delivery",
+    "badge": "Global Edge Network",
+    "summary": "High-performance, global Content Delivery Network leveraging Google's private fiber network.",
+    "details": "Caches static assets and media close to users at hundreds of edge Points of Presence (PoPs) worldwide, reducing latency, terminating TLS at the edge, and offloading origin servers.",
+    "searchTerms": [
+      "Google Cloud CDN",
+      "Edge PoPs",
+      "Google Global Fiber",
+      "Anycast IP",
+      "Origin Shield",
+      "Cache Keys"
+    ],
+    "architectureRole": "Distributes static web frontend assets cached from Google Cloud Storage and proxies dynamic API traffic toward the Cloud Load Balancer."
+  },
+  "s3": {
+    "title": "Google Cloud Storage (GCS)",
+    "category": "Storage",
+    "badge": "Object Storage",
+    "summary": "Worldwide, durable, and highly scalable object storage designed for 99.999999999% (11 9's) annual durability.",
+    "details": "Stores unstructured data, images, videos, backups, and static website assets.\n\n• Signed URLs: Enables clients to securely upload directly (Signed URL POST/PUT) or download (Signed URL GET) without routing heavy payloads through application servers.",
+    "searchTerms": [
+      "Google Cloud Storage",
+      "Signed URLs",
+      "Bucket Policies",
+      "Object Lifecycle Management",
+      "Dual-Region Storage"
+    ],
+    "architectureRole": "Stores user file uploads directly via Signed URLs and triggers worker Cloud Functions automatically upon file landing."
+  },
+  "cloudwatch": {
+    "title": "Google Cloud Operations Suite (Monitoring & Logging)",
+    "category": "Management & Governance",
+    "badge": "Monitoring & Observability",
+    "summary": "Full-stack monitoring, logging, and application performance management solution (formerly Stackdriver).",
+    "details": "Aggregates logs and metrics from Cloud Run, Cloud Functions, Cloud SQL, and Load Balancers. Generates metric-based alert policies and powers real-time dashboards.",
+    "searchTerms": [
+      "Cloud Monitoring",
+      "Cloud Logging",
+      "Error Reporting",
+      "Cloud Trace",
+      "Metric-Based Alerting"
+    ],
+    "architectureRole": "Monitors health metrics across all infrastructure and collects container & serverless logs for debugging and auditing."
+  },
+  "route53": {
+    "title": "Google Cloud DNS",
+    "category": "Networking & DNS",
+    "badge": "Authoritative DNS",
+    "summary": "Scalable, reliable, and managed authoritative Domain Name System (DNS) service running on Google's infrastructure.",
+    "details": "Provides 100% availability SLA with anycast name servers distributed globally. Maps user domain names to Cloud CDN and Cloud Load Balancers with ultra-low latency.",
+    "searchTerms": [
+      "Google Cloud DNS",
+      "Managed DNS Zones",
+      "Anycast Name Servers",
+      "DNSSEC",
+      "Routing Policies"
+    ],
+    "architectureRole": "Top-level DNS resolving user domain queries and pointing directly to Cloud CDN edge distribution."
+  },
+  "acm": {
+    "title": "Google Cloud Certificate Manager",
+    "category": "Security & Compliance",
+    "badge": "SSL/TLS Certificates",
+    "summary": "Service that provisions, verifies, and automatically renews public and private SSL/TLS certificates.",
+    "details": "Provides free Google-managed SSL/TLS certificates for Cloud Load Balancers and Cloud CDN with zero-touch automatic DNS authorization and lifecycle renewal.",
+    "searchTerms": [
+      "Google Certificate Manager",
+      "Google-Managed SSL",
+      "DNS Authorizations",
+      "TLS Termination",
+      "Zero-Touch Renewals"
+    ],
+    "architectureRole": "Secures all inbound HTTPS connections by binding validated TLS certificates to Cloud CDN and Cloud Load Balancers."
+  },
+  "elb": {
+    "title": "Google Cloud Network Load Balancer (Layer 4)",
+    "category": "Networking & Load Balancing",
+    "badge": "Layer 4 Load Balancer",
+    "summary": "High-performance, pass-through Layer 4 load balancer for TCP/UDP traffic.",
+    "details": "Delivers millions of requests per second without needing pre-warming, routing network traffic across backend instances or serverless endpoints.",
+    "searchTerms": [
+      "Network Load Balancing",
+      "Pass-Through Load Balancer",
+      "Health Checks",
+      "Anycast IP"
+    ],
+    "architectureRole": "Distributes incoming traffic across backend infrastructure and internal microservice endpoints."
+  },
+  "alb": {
+    "title": "Google Cloud Application Load Balancer (Global HTTPS LB)",
+    "category": "Networking & Load Balancing",
+    "badge": "Global Layer 7 Load Balancer",
+    "summary": "Global, proxy-based Layer 7 load balancer distributing HTTP/HTTPS traffic across backend services worldwide.",
+    "details": "Provides single global Anycast Any-IP, URL map path-based routing, Cloud Armor DDoS protection, SSL termination, and seamless integration with Serverless NEGs (Network Endpoint Groups) for Cloud Run.",
+    "searchTerms": [
+      "Cloud Load Balancing",
+      "Global External Application Load Balancer",
+      "Serverless NEG",
+      "URL Maps",
+      "Cloud Armor"
+    ],
+    "architectureRole": "Receives decrypted traffic from Cloud CDN and routes REST API requests to healthy Cloud Run container services."
+  },
+  "elb_alb": {
+    "title": "Cloud Load Balancing (External Application / Network LB)",
+    "category": "Networking & Load Balancing",
+    "badge": "Load Balancer Cluster",
+    "summary": "Global load balancing infrastructure routing external user requests to serverless container workloads.",
+    "details": "Combines Global External Application Load Balancer for Layer 7 path routing and SSL termination with Serverless Network Endpoint Groups for zero-downtime scaling.",
+    "searchTerms": [
+      "Cloud Load Balancing",
+      "Global Anycast IP",
+      "Serverless NEG",
+      "Cross-Region Load Balancing"
+    ],
+    "architectureRole": "Acts as the single entry point for API traffic reaching the backend container infrastructure."
+  },
+  "iam": {
+    "title": "Google Cloud IAM (Identity and Access Management)",
+    "category": "Security, Identity & Access",
+    "badge": "Access Control & Service Accounts",
+    "summary": "Fine-grained access control and identity management governing authorizations across Google Cloud resources.",
+    "details": "Enforces least-privilege permissions using Service Accounts with temporary credentials, avoiding hard-coded API keys in application source code.",
+    "searchTerms": [
+      "Cloud IAM",
+      "Service Accounts",
+      "Workload Identity",
+      "Least Privilege Principle",
+      "IAM Roles"
+    ],
+    "architectureRole": "Grants granular permissions allowing Cloud Run containers and Cloud Functions to securely access Cloud Storage, SQL, and Tasks."
+  },
+  "parameter_store": {
+    "title": "Google Cloud Secret Manager",
+    "category": "Management & Security",
+    "badge": "Configuration & Secrets",
+    "summary": "Secure and convenient storage system for API keys, passwords, database credentials, and certificates.",
+    "details": "Provides centralized, versioned, encrypted storage for sensitive data with fine-grained Cloud IAM access control and audit logging.",
+    "searchTerms": [
+      "Google Secret Manager",
+      "Secrets Versioning",
+      "Cloud KMS Encryption",
+      "Automated Rotation",
+      "IAM Access Controls"
+    ],
+    "architectureRole": "Supplies encrypted database passwords and API configuration keys to containers and Cloud Functions on startup."
+  },
+  "opensearch": {
+    "title": "Google Cloud Vertex AI Search / Elasticsearch",
+    "category": "Analytics & Search",
+    "badge": "Search & Analytics Engine",
+    "summary": "Fully managed enterprise search and analytics engine with keyword, vector, and semantic search capabilities.",
+    "details": "Enables sub-second search queries across large catalogs with autocomplete, fuzzy matching, faceted filtering, generative summaries, and vector similarity search.",
+    "searchTerms": [
+      "Vertex AI Search",
+      "Elasticsearch on Google Cloud",
+      "Vector Search",
+      "Full-Text Search",
+      "Semantic Search"
+    ],
+    "architectureRole": "Powers high-speed application search queries and real-time faceted exploration alongside primary relational data."
+  },
+  "api_gateway": {
+    "title": "Google Cloud Run (WebSockets) / API Gateway",
+    "category": "Networking & APIs",
+    "badge": "Managed API & WebSocket Hub",
+    "summary": "Fully managed API and real-time streaming endpoint supporting bidirectional WebSocket connections.",
+    "details": "Maintains persistent, stateful WebSocket connections with client applications.\n\nWhen long-running asynchronous tasks (5–15 minutes) complete, backend worker Functions broadcast live notifications directly back to users without requiring client polling.",
+    "searchTerms": [
+      "Cloud Run WebSockets",
+      "Google Cloud API Gateway",
+      "Bidirectional Streaming",
+      "Long-Running Notifications"
+    ],
+    "architectureRole": "Maintains active WebSocket links with clients to push notifications when asynchronous tasks finish."
+  },
+  "cloudflare": {
+    "title": "Cloudflare",
+    "category": "Edge & Security",
+    "badge": "External Edge Proxy",
+    "summary": "Global CDN, DNS, and DDoS protection layer positioned at the Internet perimeter before Google Cloud origins.",
+    "details": "Provides edge caching, Web Application Firewall (WAF) rule sets, bot management, and SSL termination before routing legitimate traffic to Google Cloud CDN or Cloud DNS.",
+    "searchTerms": [
+      "Cloudflare",
+      "Edge Computing",
+      "WAF (Web Application Firewall)",
+      "DDoS Mitigation",
+      "Edge DNS"
+    ],
+    "architectureRole": "Acts as the outermost internet security shield and DNS proxy guarding the architecture against malicious traffic."
+  },
+  "user": {
+    "title": "End User / Web Client",
+    "category": "Actors & Clients",
+    "badge": "Client Application",
+    "summary": "End-user web browser or mobile client initiating HTTP requests, WebSocket streams, and file transfers.",
+    "details": "Clients fetch static assets from Cloud CDN, connect to Cloud Run via WebSockets for real-time progress updates, and upload files directly to Google Cloud Storage via Signed URLs without loading application servers.",
+    "searchTerms": [
+      "Client-Side Architecture",
+      "Signed URL Uploads",
+      "WebSocket Client",
+      "Single Page App (SPA)"
+    ],
+    "architectureRole": "Interacts with Cloud CDN for assets, Cloud Run for live WebSocket alerts, and Cloud Storage for direct uploads."
+  },
+  "admin": {
+    "title": "Administrator Client",
+    "category": "Actors & Clients",
+    "badge": "Privileged User",
+    "summary": "System administrator or staff member accessing administrative panels, metrics dashboards, and configuration tools.",
+    "details": "Admins access operational views, monitor Cloud Monitoring metrics, inspect Vertex Search analytics, and manage application secrets stored in Secret Manager.",
+    "searchTerms": [
+      "Admin Console",
+      "Cloud IAM",
+      "Internal Tools",
+      "Operational Dashboards"
+    ],
+    "architectureRole": "Consumes administrative APIs and observability dashboards to monitor system health and perform operational duties."
+  }
+}
