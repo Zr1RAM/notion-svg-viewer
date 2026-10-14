@@ -284,7 +284,11 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
     setIsSpotlightOpen(false);
 
     if (typeof window !== "undefined") {
-      const currentPath = window.location.pathname.replace(/\/$/, "").toLowerCase();
+      const basePath = (process.env.NEXT_PUBLIC_BASE_PATH || "").toLowerCase();
+      const rawPath = window.location.pathname.replace(/\/$/, "").toLowerCase();
+      const currentPath = basePath && rawPath.startsWith(basePath)
+        ? rawPath.slice(basePath.length)
+        : rawPath;
       const targetPath = url.replace(/\/$/, "").toLowerCase();
 
       if (currentPath === targetPath) {

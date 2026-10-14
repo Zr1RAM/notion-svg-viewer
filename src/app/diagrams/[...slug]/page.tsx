@@ -54,11 +54,14 @@ export default async function DiagramPage({ params }: DiagramPageProps) {
     notFound();
   }
 
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+  const targetUrl = `${basePath}/cloud-architecture/${diagramId}.html`;
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center bg-[#121212] text-gray-400 p-8 min-h-[60vh]">
       <script
         dangerouslySetInnerHTML={{
-          __html: `window.location.replace('/cloud-architecture/${diagramId}.html' + window.location.search);`,
+          __html: `window.location.replace('${targetUrl}' + window.location.search);`,
         }}
       />
       <div className="flex flex-col items-center gap-3">
@@ -69,7 +72,7 @@ export default async function DiagramPage({ params }: DiagramPageProps) {
         <p className="text-xs text-gray-500">
           If you are not redirected automatically,{" "}
           <a
-            href={`/cloud-architecture/${diagramId}.html`}
+            href={targetUrl}
             className="text-hub-green underline hover:text-white"
           >
             click here

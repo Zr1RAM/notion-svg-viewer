@@ -121,11 +121,13 @@ export const HubView: React.FC<HubViewProps> = ({ categories }) => {
     const isGuide = item.type === "guide";
     const isStaticHtml = item.url.endsWith(".html");
     const Component = isStaticHtml ? "a" : Link;
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    const href = isStaticHtml ? `${basePath}${item.url}` : item.url;
 
     return (
       <Component
         key={item.url}
-        href={item.url}
+        href={href}
         className="group flex items-center justify-between p-3 rounded-xl bg-hub-subcard hover:bg-hub-subcard-hover border border-hub-border hover:border-hub-border-hover transition-all duration-200"
       >
         <div className="flex items-center gap-3 min-w-0">
