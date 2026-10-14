@@ -119,9 +119,11 @@ export const HubView: React.FC<HubViewProps> = ({ categories }) => {
   const renderItemButton = (item: HubItem) => {
     const isDoc = item.type === "doc";
     const isGuide = item.type === "guide";
+    const isStaticHtml = item.url.endsWith(".html");
+    const Component = isStaticHtml ? "a" : Link;
 
     return (
-      <Link
+      <Component
         key={item.url}
         href={item.url}
         className="group flex items-center justify-between p-3 rounded-xl bg-hub-subcard hover:bg-hub-subcard-hover border border-hub-border hover:border-hub-border-hover transition-all duration-200"
@@ -164,7 +166,7 @@ export const HubView: React.FC<HubViewProps> = ({ categories }) => {
         <div className="text-hub-muted group-hover:text-white group-hover:translate-x-1 transition-all pl-2">
           <ArrowRight className="w-4 h-4" />
         </div>
-      </Link>
+      </Component>
     );
   };
 

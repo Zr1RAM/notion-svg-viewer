@@ -181,7 +181,7 @@ export function getAllHubItems(): CategoryGroup[] {
           category: "Cloud Architecture",
           type: "diagram",
           description: `Interactive cloud architecture map with ${nodeCount} inspectable services, pan & zoom.`,
-          url: `/diagrams/cloud-architecture/${folder}/`,
+          url: `/cloud-architecture/${folder}.html`,
           meta: { nodesCount: nodeCount },
         });
       }
