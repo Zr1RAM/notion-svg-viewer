@@ -1,6 +1,11 @@
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+// Polyfill WebSocket for environments running Node.js < 22 (sync only uses Storage, not Realtime)
+if (typeof (globalThis as any).WebSocket === "undefined") {
+  (globalThis as any).WebSocket = class DummyWebSocket {};
+}
+
 import { createClient } from "@supabase/supabase-js";
 
 // Load .env.local first (Next.js convention), then fallback to .env
