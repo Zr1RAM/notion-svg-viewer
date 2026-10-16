@@ -58,7 +58,8 @@ It serves three core content types:
 ## Content Discovery & Routing
 
 Content discovery is **automated at build time** via [`src/lib/content.ts`](file:///F:/Projects/Unclassified/notion-svg-viewer/src/lib/content.ts). There is no manual manifest or JSON file to maintain:
-- Markdown files placed in content directories are automatically cataloged, parsed, and assigned routes (`/docs/[...slug]`).
+- Markdown documentation is synchronized from **Supabase Storage** (`interview-prep` bucket) at build time via `npm run prebuild` / `npm run sync` into `.cache/docs/` (with automatic fallback to `content/docs/`).
+- Markdown files are automatically cataloged, parsed, and assigned routes (`/docs/[...slug]`).
 - Directory hierarchy automatically generates category names, subfolder groupings, reading time, word count, and hierarchical Table of Contents (TOC).
 - Cloud architecture diagrams (`aws`, `azure`, `gcp`) live in `public/cloud-architecture/*.html` and are linked directly from the Hub with floating `← Hub` back navigation that automatically hides when `?embed=true`.
 
