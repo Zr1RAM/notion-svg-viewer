@@ -438,3 +438,12 @@
   display: block;
   margin: 0 auto;
 }
+
+.mermaid-error-banner {
+  transition: all 0.2s ease;
+}
+.mermaid-error-banner:hover {
+  border-color: rgba(244, 63, 94, 0.45);
+  box-shadow: 0 0 25px rgba(244, 63, 94, 0.12);
+}
+

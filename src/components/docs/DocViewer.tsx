@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { useSearchParams, useRouter } from "next/navigation";
 import { DocContent, HeadingItem } from "@/lib/content";
 import { SpotlightModal } from "./SpotlightModal";
+import { MermaidErrorModal, MermaidErrorInfo } from "./MermaidErrorModal";
 import "@/styles/markdown.css";
 import "@/styles/highlight.css";
 import {
@@ -44,6 +45,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
   const [allExpanded, setAllExpanded] = useState(true);
   const [collapsedTocSections, setCollapsedTocSections] = useState<Record<string, boolean>>({});
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
+  const [mermaidErrorInfo, setMermaidErrorInfo] = useState<MermaidErrorInfo | null>(null);
 
   const articleRef = useRef<HTMLElement>(null);
 
@@ -427,6 +429,38 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       }, 2000);
       return;
     }
+
+    // 7. Mermaid Error Inspect Button (Open Error Modal)
+    const errorBtn = target.closest(".btn-mermaid-inspect-error") as HTMLElement | null;
+    if (errorBtn) {
+      e.stopPropagation();
+      const wrapper = errorBtn.closest(".mermaid-block-wrapper") as HTMLElement | null;
+      const errorMsg = decodeURIComponent(errorBtn.getAttribute("data-error") || "Mermaid syntax error");
+      const rawCode = decodeURIComponent(wrapper?.getAttribute("data-mermaid-code") || "");
+      setMermaidErrorInfo({
+        errorMessage: errorMsg,
+        rawCode,
+      });
+      return;
+    }
+
+    // 8. Mermaid Error "View Code" shortcut
+    const showCodeBtn = target.closest(".btn-mermaid-show-code") as HTMLElement | null;
+    if (showCodeBtn) {
+      e.stopPropagation();
+      const wrapper = showCodeBtn.closest(".mermaid-block-wrapper") as HTMLElement | null;
+      if (wrapper) {
+        const preview = wrapper.querySelector(".mermaid-preview-container") as HTMLElement | null;
+        const codeView = wrapper.querySelector(".mermaid-code-view") as HTMLElement | null;
+        const toggleSpan = wrapper.querySelector(".mermaid-toggle-btn span");
+        if (preview && codeView) {
+          codeView.classList.remove("hidden");
+          preview.classList.add("hidden");
+          if (toggleSpan) toggleSpan.textContent = "View Diagram";
+        }
+      }
+      return;
+    }
   }, []);
 
   // Dynamic Conditional Mermaid Rendering (Loads mermaid only when needed)
@@ -444,6 +478,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
         const mermaid = (await import("mermaid")).default;
         mermaid.initialize({
           startOnLoad: false,
+          suppressErrorRendering: true, // Prevents Mermaid from injecting broken error elements into DOM
           theme: "dark",
           darkMode: true,
           themeVariables: {
@@ -468,30 +503,85 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
           securityLevel: "loose",
         });
 
-        for (let i = 0; i < mermaidBlocks.length; i++) {
-          if (!isMounted) break;
-          const block = mermaidBlocks[i];
+        const renderTasks = Array.from(mermaidBlocks).map(async (block, i) => {
+          if (!isMounted) return;
           const targetEl = block.querySelector<HTMLElement>(".mermaid-target");
           const loadingEl = block.querySelector<HTMLElement>(".mermaid-loading-indicator");
           const rawCode = decodeURIComponent(block.getAttribute("data-mermaid-code") || "");
 
-          if (!targetEl || targetEl.getAttribute("data-rendered") === "true") continue;
+          if (!targetEl || targetEl.getAttribute("data-rendered") === "true") return;
+
+          const chartId = `mermaid_chart_${Date.now()}_${i}`;
+
+          // Clean up any lingering temporary DOM nodes from prior attempts
+          document.getElementById(chartId)?.remove();
+          document.getElementById(`d${chartId}`)?.remove();
 
           try {
-            const id = `mermaid-chart-${Date.now()}-${i}`;
-            const { svg } = await mermaid.render(id, rawCode);
-            if (!isMounted) break;
+            // First validate syntax with parse()
+            await mermaid.parse(rawCode, { suppressErrors: false });
+
+            // If parse succeeded, render the diagram SVG
+            const { svg } = await mermaid.render(chartId, rawCode);
+            if (!isMounted) return;
 
             targetEl.innerHTML = svg;
             targetEl.setAttribute("data-rendered", "true");
             if (loadingEl) loadingEl.style.display = "none";
           } catch (renderError: any) {
-            console.error("Failed to render Mermaid chart:", renderError);
-            if (loadingEl) {
-              loadingEl.innerHTML = `<span class="text-rose-400 text-xs">Diagram syntax error. Click "View Code" to see source.</span>`;
-            }
+            console.warn(`Mermaid diagram #${i} syntax issue:`, renderError?.message || renderError);
+            if (!isMounted) return;
+
+            // Remove any orphan elements Mermaid may have injected into document.body
+            document.getElementById(chartId)?.remove();
+            document.getElementById(`d${chartId}`)?.remove();
+
+            const errorMessage =
+              renderError?.message ||
+              (typeof renderError === "string" ? renderError : "Diagram syntax or compilation error");
+
+            targetEl.setAttribute("data-rendered", "error");
+            if (loadingEl) loadingEl.style.display = "none";
+
+            targetEl.innerHTML = `
+              <div class="mermaid-error-banner w-full max-w-xl mx-auto my-3 p-4 rounded-xl border border-rose-500/30 bg-rose-950/20 backdrop-blur-sm text-center flex flex-col items-center gap-3 animate-in fade-in">
+                <div class="w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-400">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                </div>
+                <div class="space-y-1">
+                  <h4 class="text-sm font-semibold text-rose-300">Mermaid Diagram Error</h4>
+                  <p class="text-xs text-gray-300 max-w-md">Failed to render diagram due to a syntax error in the definition.</p>
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    class="btn-mermaid-inspect-error inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/35 hover:border-rose-500/60 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+                    data-error="${encodeURIComponent(errorMessage)}"
+                  >
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="16" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>View Error Details</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-mermaid-show-code inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+                  >
+                    <span>View Code</span>
+                  </button>
+                </div>
+              </div>
+            `;
           }
-        }
+        });
+
+        await Promise.allSettled(renderTasks);
       } catch (loadError) {
         console.error("Failed to dynamically load Mermaid:", loadError);
       }
@@ -666,6 +756,13 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
           onSelectResult={handleSelectSearchResult}
         />
       )}
+
+      {/* Mermaid Syntax Error Diagnostic Modal */}
+      <MermaidErrorModal
+        isOpen={Boolean(mermaidErrorInfo)}
+        onClose={() => setMermaidErrorInfo(null)}
+        errorInfo={mermaidErrorInfo}
+      />
 
       <div className={`max-w-7xl mx-auto px-4 sm:px-8 py-8 ${isEmbed ? "!max-w-none !p-4" : ""}`}>
         {/* Flex layout: Table of Contents on LEFT, Main Article on RIGHT */}
