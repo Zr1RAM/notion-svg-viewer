@@ -423,3 +423,18 @@
   color: #fff;
   font-weight: 600;
 }
+
+/* Mermaid Diagram Styles */
+.mermaid-block-wrapper {
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.mermaid-block-wrapper:hover {
+  border-color: rgba(0, 255, 136, 0.25);
+  box-shadow: 0 10px 30px -10px rgba(0, 255, 136, 0.08);
+}
+.mermaid-target svg {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block;
+  margin: 0 auto;
+}
