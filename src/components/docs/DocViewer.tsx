@@ -386,7 +386,123 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       }
       return;
     }
+
+    // 5. Mermaid Toggle Button (View Code <-> View Diagram)
+    const mermaidToggle = target.closest(".mermaid-toggle-btn") as HTMLElement | null;
+    if (mermaidToggle) {
+      e.stopPropagation();
+      const wrapper = mermaidToggle.closest(".mermaid-block-wrapper") as HTMLElement | null;
+      if (wrapper) {
+        const preview = wrapper.querySelector(".mermaid-preview-container") as HTMLElement | null;
+        const codeView = wrapper.querySelector(".mermaid-code-view") as HTMLElement | null;
+        const span = mermaidToggle.querySelector("span");
+        if (preview && codeView) {
+          const isShowingCode = !codeView.classList.contains("hidden");
+          if (isShowingCode) {
+            codeView.classList.add("hidden");
+            preview.classList.remove("hidden");
+            if (span) span.textContent = "View Code";
+          } else {
+            codeView.classList.remove("hidden");
+            preview.classList.add("hidden");
+            if (span) span.textContent = "View Diagram";
+          }
+        }
+      }
+      return;
+    }
+
+    // 6. Mermaid Copy Code Button
+    const mermaidCopy = target.closest(".mermaid-copy-btn") as HTMLElement | null;
+    if (mermaidCopy) {
+      e.stopPropagation();
+      const code = decodeURIComponent(mermaidCopy.getAttribute("data-code") || "");
+      navigator.clipboard.writeText(code);
+      const span = mermaidCopy.querySelector("span");
+      if (span) span.textContent = "Copied!";
+      mermaidCopy.classList.add("text-emerald-400");
+      setTimeout(() => {
+        if (span) span.textContent = "Copy";
+        mermaidCopy.classList.remove("text-emerald-400");
+      }, 2000);
+      return;
+    }
   }, []);
+
+  // Dynamic Conditional Mermaid Rendering (Loads mermaid only when needed)
+  useEffect(() => {
+    const container = articleRef.current;
+    if (!container) return;
+
+    const mermaidBlocks = container.querySelectorAll<HTMLElement>(".mermaid-block-wrapper");
+    if (mermaidBlocks.length === 0) return; // Zero overhead if no mermaid blocks!
+
+    let isMounted = true;
+
+    async function renderMermaid() {
+      try {
+        const mermaid = (await import("mermaid")).default;
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: "dark",
+          darkMode: true,
+          themeVariables: {
+            darkMode: true,
+            background: "#090d13",
+            primaryColor: "#0f172a",
+            primaryTextColor: "#f1f5f9",
+            primaryBorderColor: "#00ff88",
+            lineColor: "#38bdf8",
+            secondaryColor: "#1e1b4b",
+            tertiaryColor: "#0f172a",
+            noteBkgColor: "#161b22",
+            noteTextColor: "#cbd5e1",
+            noteBorderColor: "#38bdf8",
+            actorBkg: "#0f172a",
+            actorBorder: "#00ff88",
+            actorTextColor: "#f1f5f9",
+            signalColor: "#38bdf8",
+            signalTextColor: "#f1f5f9",
+          },
+          fontFamily: "inherit",
+          securityLevel: "loose",
+        });
+
+        for (let i = 0; i < mermaidBlocks.length; i++) {
+          if (!isMounted) break;
+          const block = mermaidBlocks[i];
+          const targetEl = block.querySelector<HTMLElement>(".mermaid-target");
+          const loadingEl = block.querySelector<HTMLElement>(".mermaid-loading-indicator");
+          const rawCode = decodeURIComponent(block.getAttribute("data-mermaid-code") || "");
+
+          if (!targetEl || targetEl.getAttribute("data-rendered") === "true") continue;
+
+          try {
+            const id = `mermaid-chart-${Date.now()}-${i}`;
+            const { svg } = await mermaid.render(id, rawCode);
+            if (!isMounted) break;
+
+            targetEl.innerHTML = svg;
+            targetEl.setAttribute("data-rendered", "true");
+            if (loadingEl) loadingEl.style.display = "none";
+          } catch (renderError: any) {
+            console.error("Failed to render Mermaid chart:", renderError);
+            if (loadingEl) {
+              loadingEl.innerHTML = `<span class="text-rose-400 text-xs">Diagram syntax error. Click "View Code" to see source.</span>`;
+            }
+          }
+        }
+      } catch (loadError) {
+        console.error("Failed to dynamically load Mermaid:", loadError);
+      }
+    }
+
+    renderMermaid();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [doc.html]);
 
   // Initialize and persist checkbox states in localStorage
   useEffect(() => {

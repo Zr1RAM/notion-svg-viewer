@@ -41,8 +41,9 @@ It serves three core content types:
 │   │   └── layout/
 │   │       └── Navbar.tsx       # Global navigation bar
 │   ├── lib/
-│   │   ├── content.ts           # Build-time filesystem scanner & markdown parser
-│   │   └── types.ts             # Core TypeScript interfaces
+│   │   ├── content.ts           # Build-time hub discovery & document loader
+│   │   ├── types.ts             # Core TypeScript interfaces
+│   │   └── markdown/            # Modular parsing pipeline (callouts, collapsibles, renderers, parser)
 │   └── styles/
 │       ├── globals.css          # Foundation tokens, reset, ambient glow, hub accordion animations
 │       ├── markdown.css         # Typography, callouts, collapsibles, search pulse animations
@@ -91,6 +92,7 @@ To maintain minimal bundle size, maximum caching, and route-level code splitting
   - Selecting a match scrolls directly to the target line and activates a persistent glowing green pulse highlight.
   - Has an opaque solid background (`bg-black/85 backdrop-blur-md` and `bg-[#161b22]`) to eliminate text bleed-through.
 - **Notion Embed Support**: Appending `?embed=true` to any doc or diagram route strips headers, navigation bars, and margins for a seamless fit inside Notion iframe embed blocks.
+- **Conditional Mermaid Rendering**: Markdown ````mermaid``` code blocks are detected at build time and rendered using dynamic code-split lazy-loading (`import('mermaid')`). Standard docs download 0 KB of Mermaid JS. Includes theme matching, copy source code, and a seamless `[View Code | View Diagram]` toggle.
 
 ---
 
