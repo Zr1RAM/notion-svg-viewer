@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { notFound } from "next/navigation";
-import { getDocData, slugify } from "@/lib/content";
+import { getDocData, getDocsDirectory, slugify } from "@/lib/content";
 import { DocViewer } from "@/components/docs/DocViewer";
 import { Metadata } from "next";
 import { Suspense } from "react";
@@ -13,7 +13,7 @@ interface DocPageProps {
 }
 
 export async function generateStaticParams() {
-  const docsDir = path.join(process.cwd(), "content", "docs");
+  const docsDir = getDocsDirectory();
   if (!fs.existsSync(docsDir)) return [];
 
   const params: { slug: string[] }[] = [];

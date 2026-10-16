@@ -152,6 +152,11 @@ export interface DiagramContent {
 }
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
+const CACHE_DOCS_DIR = path.join(process.cwd(), ".cache", "docs");
+
+export function getDocsDirectory(): string {
+  return CACHE_DOCS_DIR;
+}
 
 /**
  * Discovers and indexes all items in content/
@@ -210,7 +215,7 @@ export function getAllHubItems(): CategoryGroup[] {
   }
 
   // 3. Markdown Docs (Interview Prep)
-  const docsDir = path.join(CONTENT_DIR, "docs");
+  const docsDir = getDocsDirectory();
   if (fs.existsSync(docsDir)) {
     function scanDocs(currentDir: string, currentCategory: string, currentSubfolder?: string) {
       const entries = fs.readdirSync(currentDir, { withFileTypes: true });
@@ -383,7 +388,7 @@ function wrapSectionsAndQuestions(html: string): string {
  * Loads Doc Data
  */
 export function getDocData(slugParts: string[]): DocContent | null {
-  const docsDir = path.join(CONTENT_DIR, "docs");
+  const docsDir = getDocsDirectory();
   // Search recursively for matching slug
   let targetFile: string | null = null;
   let categoryName = "Documentation";
