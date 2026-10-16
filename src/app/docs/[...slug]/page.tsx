@@ -30,7 +30,15 @@ export async function generateStaticParams() {
     }
   }
 
-  scan(docsDir, []);
+  if (fs.existsSync(docsDir)) {
+    scan(docsDir, []);
+  }
+
+  // Next.js static export requires at least one route param for catch-all [...slug]
+  if (params.length === 0) {
+    return [{ slug: ["_empty"] }];
+  }
+
   return params;
 }
 
