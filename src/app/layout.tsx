@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { Navbar } from "@/components/layout/Navbar";
+import { getAllHubItems } from "@/lib/content";
 import { Suspense } from "react";
 
 const inter = Inter({
@@ -27,11 +28,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const categories = getAllHubItems();
+
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} dark`}>
       <body className="bg-hub-bg text-hub-primary font-sans antialiased min-h-screen flex flex-col">
         <Suspense fallback={null}>
-          <Navbar />
+          <Navbar categories={categories} />
         </Suspense>
         <div className="flex-1 flex flex-col">{children}</div>
       </body>
