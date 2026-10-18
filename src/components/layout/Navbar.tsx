@@ -191,14 +191,6 @@ export const Navbar: React.FC<NavbarProps> = ({ categories = [] }) => {
             )}
           </button>
         )}
-
-        <Link
-          href="/"
-          title="Back to Hub Directory"
-          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-hub-secondary hover:text-white transition-colors"
-        >
-          <Home className="w-4 h-4" />
-        </Link>
       </div>
     </header>
   );
