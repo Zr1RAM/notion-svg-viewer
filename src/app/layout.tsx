@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { Navbar } from "@/components/layout/Navbar";
+import { FloatingChatWidget } from "@/components/chat/FloatingChatWidget";
 import { getAllHubItems } from "@/lib/content";
 import { Suspense } from "react";
 
@@ -37,6 +38,9 @@ export default function RootLayout({
           <Navbar categories={categories} />
         </Suspense>
         <div className="flex-1 flex flex-col">{children}</div>
+        <Suspense fallback={null}>
+          <FloatingChatWidget />
+        </Suspense>
       </body>
     </html>
   );
