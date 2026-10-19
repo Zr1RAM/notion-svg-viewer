@@ -1,36 +1,17 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { DocContent, HeadingItem } from "@/lib/content";
+import { DocContent } from "@/lib/content";
+import { DocToc } from "./DocToc";
+import { DocHeader } from "./DocHeader";
+import { DocArticle } from "./DocArticle";
 import { SpotlightModal } from "./SpotlightModal";
 import { MermaidErrorModal, MermaidErrorInfo } from "./MermaidErrorModal";
-import "@/styles/markdown.css";
-import "@/styles/highlight.css";
-import {
-  Clock,
-  FileText,
-  List,
-  Share2,
-  Check,
-  ChevronRight,
-  ChevronDown,
-  ArrowUp,
-  ChevronsUpDown,
-  Copy,
-  Search,
-} from "lucide-react";
 
 interface DocViewerProps {
   doc: DocContent;
   embedMode?: boolean;
-}
-
-interface TocGroup {
-  id: string;
-  text: string;
-  level: number;
-  subItems: HeadingItem[];
 }
 
 export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) => {
@@ -40,45 +21,11 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
 
   const [activeHeading, setActiveHeading] = useState<string>("");
   const [readingProgress, setReadingProgress] = useState(0);
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [copiedRaw, setCopiedRaw] = useState(false);
   const [allExpanded, setAllExpanded] = useState(true);
-  const [collapsedTocSections, setCollapsedTocSections] = useState<Record<string, boolean>>({});
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const [mermaidErrorInfo, setMermaidErrorInfo] = useState<MermaidErrorInfo | null>(null);
 
   const articleRef = useRef<HTMLElement>(null);
-
-  // Group headings into sections (H2) and nested sub-items (H3/H4) for TOC
-  const tocGroups = useMemo(() => {
-    const groups: TocGroup[] = [];
-    let currentGroup: TocGroup | null = null;
-
-    for (const h of doc.headings) {
-      if (h.level <= 2) {
-        currentGroup = {
-          id: h.id,
-          text: h.text,
-          level: h.level,
-          subItems: [],
-        };
-        groups.push(currentGroup);
-      } else {
-        if (currentGroup) {
-          currentGroup.subItems.push(h);
-        } else {
-          currentGroup = {
-            id: h.id,
-            text: h.text,
-            level: h.level,
-            subItems: [],
-          };
-          groups.push(currentGroup);
-        }
-      }
-    }
-    return groups;
-  }, [doc.headings]);
 
   // Global Ctrl+P / Cmd+P hotkey & custom event listener to open scoped Spotlight Search
   useEffect(() => {
@@ -129,12 +76,9 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       )
     ) as HTMLElement[];
 
-    let targetEl: HTMLElement | null = null;
-
     // Helper: given a list of matching elements, pick the deepest / leaf-most element
     const pickLeafMatch = (elements: HTMLElement[]): HTMLElement | null => {
       if (elements.length === 0) return null;
-      // Filter out elements that contain another matching element (keep leaves only)
       const leafElements = elements.filter(
         (el) => !elements.some((other) => other !== el && el.contains(other))
       );
@@ -146,7 +90,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       const tc = (el.textContent || "").toLowerCase().replace(/\s+/g, " ");
       return tc.includes(cleanSnippet);
     });
-    targetEl = pickLeafMatch(exactMatches);
+    let targetEl = pickLeafMatch(exactMatches);
 
     // 2. Prefix match (first 30 characters)
     if (!targetEl && cleanSnippet.length > 25) {
@@ -175,7 +119,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       }
     }
 
-    // Fallback: if not found in contentCandidates, search all non-container elements
+    // Fallback: search all non-container elements
     if (!targetEl) {
       const allElements = Array.from(container.querySelectorAll("*")) as HTMLElement[];
       const fallbackMatches = allElements.filter((el) => {
@@ -195,7 +139,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
 
     if (!targetEl) return false;
 
-    // Identify the best block element to scroll to and highlight (clean container wrapping text)
+    // Identify the best block element to scroll to and highlight
     const blockEl =
       (targetEl.closest(
         "p, li, h1, h2, h3, h4, h5, h6, pre, tr, td, blockquote"
@@ -235,11 +179,9 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       });
 
       if (questionEl) {
-        // Illuminate the entire question & answer div with glowing background and border
         void questionEl.offsetWidth; // trigger reflow
         questionEl.classList.add("search-target-highlight");
 
-        // Also mark the specific matching line within the answer for pinpoint precision
         if (blockEl && blockEl !== questionEl) {
           blockEl.classList.add("search-line-highlight");
         }
@@ -249,16 +191,12 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       }
     };
 
-    // Determine element to scroll into view: center the whole question card if it fits, else the specific line
     const scrollTarget =
       questionEl && questionEl.offsetHeight < window.innerHeight * 0.85
         ? questionEl
         : blockEl;
 
-    // Apply highlight immediately so it is already glowing during scroll and stays lit
     triggerHighlight();
-
-    // Smoothly scroll to center the element in the viewport
     scrollTarget.scrollIntoView({ behavior: "smooth", block: "center" });
 
     return true;
@@ -294,7 +232,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       const targetPath = url.replace(/\/$/, "").toLowerCase();
 
       if (currentPath === targetPath) {
-        // Same page: do NOT reload or navigate, immediately scroll and highlight
+        // Same page: immediately scroll and highlight
         scrollToSnippet(snippetText);
       } else {
         // Different page: navigate to target page and carry snippet
@@ -331,299 +269,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
     return () => window.removeEventListener("scroll", handleScroll);
   }, [doc.headings]);
 
-  // Interactive article event delegation for collapsible sections, questions, and code blocks
-  const handleArticleClick = useCallback((e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-
-    // Ignore clicks on anchor link targets or form inputs
-    if (target.closest("a.heading-anchor") || target.tagName.toLowerCase() === "input") return;
-
-    // 1. Copy code button
-    const copyBtn = target.closest(".copy-code-btn") as HTMLElement | null;
-    if (copyBtn) {
-      e.stopPropagation();
-      const code = decodeURIComponent(copyBtn.getAttribute("data-code") || "");
-      navigator.clipboard.writeText(code);
-      const span = copyBtn.querySelector("span");
-      if (span) span.textContent = "Copied!";
-      copyBtn.classList.add("text-hub-green");
-      setTimeout(() => {
-        if (span) span.textContent = "Copy";
-        copyBtn.classList.remove("text-hub-green");
-      }, 2000);
-      return;
-    }
-
-    // 2. Code toggle button or code header
-    const codeToggle = target.closest(".btn-toggle-code") as HTMLElement | null;
-    const codeHeader = target.closest(".code-block-header") as HTMLElement | null;
-    if (codeToggle || codeHeader) {
-      const wrapper = (codeToggle || codeHeader)!.closest(".code-block-wrapper") as HTMLElement | null;
-      if (wrapper) {
-        const isOpen = wrapper.classList.toggle("open");
-        const toggleSpan = wrapper.querySelector(".btn-toggle-code span");
-        if (toggleSpan) toggleSpan.textContent = isOpen ? "Collapse" : "Expand";
-      }
-      return;
-    }
-
-    // 3. Question (H3) toggle
-    const h3 = target.closest("h3.collapsible-heading") as HTMLElement | null;
-    if (h3) {
-      const q = h3.closest(".collapsible-question") as HTMLElement | null;
-      if (q) {
-        const isOpen = q.classList.toggle("open");
-        h3.setAttribute("aria-expanded", String(isOpen));
-      }
-      return;
-    }
-
-    // 4. Section (H2) toggle
-    const h2 = target.closest("h2.collapsible-heading") as HTMLElement | null;
-    if (h2) {
-      const sec = h2.closest(".collapsible-section") as HTMLElement | null;
-      if (sec) {
-        const isOpen = sec.classList.toggle("open");
-        h2.setAttribute("aria-expanded", String(isOpen));
-      }
-      return;
-    }
-
-    // 5. Mermaid Toggle Button (View Code <-> View Diagram)
-    const mermaidToggle = target.closest(".mermaid-toggle-btn") as HTMLElement | null;
-    if (mermaidToggle) {
-      e.stopPropagation();
-      const wrapper = mermaidToggle.closest(".mermaid-block-wrapper") as HTMLElement | null;
-      if (wrapper) {
-        const preview = wrapper.querySelector(".mermaid-preview-container") as HTMLElement | null;
-        const codeView = wrapper.querySelector(".mermaid-code-view") as HTMLElement | null;
-        const span = mermaidToggle.querySelector("span");
-        if (preview && codeView) {
-          const isShowingCode = !codeView.classList.contains("hidden");
-          if (isShowingCode) {
-            codeView.classList.add("hidden");
-            preview.classList.remove("hidden");
-            if (span) span.textContent = "View Code";
-          } else {
-            codeView.classList.remove("hidden");
-            preview.classList.add("hidden");
-            if (span) span.textContent = "View Diagram";
-          }
-        }
-      }
-      return;
-    }
-
-    // 6. Mermaid Copy Code Button
-    const mermaidCopy = target.closest(".mermaid-copy-btn") as HTMLElement | null;
-    if (mermaidCopy) {
-      e.stopPropagation();
-      const code = decodeURIComponent(mermaidCopy.getAttribute("data-code") || "");
-      navigator.clipboard.writeText(code);
-      const span = mermaidCopy.querySelector("span");
-      if (span) span.textContent = "Copied!";
-      mermaidCopy.classList.add("text-emerald-400");
-      setTimeout(() => {
-        if (span) span.textContent = "Copy";
-        mermaidCopy.classList.remove("text-emerald-400");
-      }, 2000);
-      return;
-    }
-
-    // 7. Mermaid Error Inspect Button (Open Error Modal)
-    const errorBtn = target.closest(".btn-mermaid-inspect-error") as HTMLElement | null;
-    if (errorBtn) {
-      e.stopPropagation();
-      const wrapper = errorBtn.closest(".mermaid-block-wrapper") as HTMLElement | null;
-      const errorMsg = decodeURIComponent(errorBtn.getAttribute("data-error") || "Mermaid syntax error");
-      const rawCode = decodeURIComponent(wrapper?.getAttribute("data-mermaid-code") || "");
-      setMermaidErrorInfo({
-        errorMessage: errorMsg,
-        rawCode,
-      });
-      return;
-    }
-
-    // 8. Mermaid Error "View Code" shortcut
-    const showCodeBtn = target.closest(".btn-mermaid-show-code") as HTMLElement | null;
-    if (showCodeBtn) {
-      e.stopPropagation();
-      const wrapper = showCodeBtn.closest(".mermaid-block-wrapper") as HTMLElement | null;
-      if (wrapper) {
-        const preview = wrapper.querySelector(".mermaid-preview-container") as HTMLElement | null;
-        const codeView = wrapper.querySelector(".mermaid-code-view") as HTMLElement | null;
-        const toggleSpan = wrapper.querySelector(".mermaid-toggle-btn span");
-        if (preview && codeView) {
-          codeView.classList.remove("hidden");
-          preview.classList.add("hidden");
-          if (toggleSpan) toggleSpan.textContent = "View Diagram";
-        }
-      }
-      return;
-    }
-  }, []);
-
-  // Dynamic Conditional Mermaid Rendering (Loads mermaid only when needed)
-  useEffect(() => {
-    const container = articleRef.current;
-    if (!container) return;
-
-    const mermaidBlocks = container.querySelectorAll<HTMLElement>(".mermaid-block-wrapper");
-    if (mermaidBlocks.length === 0) return; // Zero overhead if no mermaid blocks!
-
-    let isMounted = true;
-
-    async function renderMermaid() {
-      try {
-        const mermaid = (await import("mermaid")).default;
-        mermaid.initialize({
-          startOnLoad: false,
-          suppressErrorRendering: true, // Prevents Mermaid from injecting broken error elements into DOM
-          theme: "dark",
-          darkMode: true,
-          themeVariables: {
-            darkMode: true,
-            background: "#090d13",
-            primaryColor: "#0f172a",
-            primaryTextColor: "#f1f5f9",
-            primaryBorderColor: "#00ff88",
-            lineColor: "#38bdf8",
-            secondaryColor: "#1e1b4b",
-            tertiaryColor: "#0f172a",
-            noteBkgColor: "#161b22",
-            noteTextColor: "#cbd5e1",
-            noteBorderColor: "#38bdf8",
-            actorBkg: "#0f172a",
-            actorBorder: "#00ff88",
-            actorTextColor: "#f1f5f9",
-            signalColor: "#38bdf8",
-            signalTextColor: "#f1f5f9",
-          },
-          fontFamily: "inherit",
-          securityLevel: "loose",
-        });
-
-        const renderTasks = Array.from(mermaidBlocks).map(async (block, i) => {
-          if (!isMounted) return;
-          const targetEl = block.querySelector<HTMLElement>(".mermaid-target");
-          const loadingEl = block.querySelector<HTMLElement>(".mermaid-loading-indicator");
-          const rawCode = decodeURIComponent(block.getAttribute("data-mermaid-code") || "");
-
-          if (!targetEl || targetEl.getAttribute("data-rendered") === "true") return;
-
-          const chartId = `mermaid_chart_${Date.now()}_${i}`;
-
-          // Clean up any lingering temporary DOM nodes from prior attempts
-          document.getElementById(chartId)?.remove();
-          document.getElementById(`d${chartId}`)?.remove();
-
-          try {
-            // First validate syntax with parse()
-            await mermaid.parse(rawCode, { suppressErrors: false });
-
-            // If parse succeeded, render the diagram SVG
-            const { svg } = await mermaid.render(chartId, rawCode);
-            if (!isMounted) return;
-
-            targetEl.innerHTML = svg;
-            targetEl.setAttribute("data-rendered", "true");
-            if (loadingEl) loadingEl.style.display = "none";
-          } catch (renderError: any) {
-            console.warn(`Mermaid diagram #${i} syntax issue:`, renderError?.message || renderError);
-            if (!isMounted) return;
-
-            // Remove any orphan elements Mermaid may have injected into document.body
-            document.getElementById(chartId)?.remove();
-            document.getElementById(`d${chartId}`)?.remove();
-
-            const errorMessage =
-              renderError?.message ||
-              (typeof renderError === "string" ? renderError : "Diagram syntax or compilation error");
-
-            targetEl.setAttribute("data-rendered", "error");
-            if (loadingEl) loadingEl.style.display = "none";
-
-            targetEl.innerHTML = `
-              <div class="mermaid-error-banner w-full max-w-xl mx-auto my-3 p-4 rounded-xl border border-rose-500/30 bg-rose-950/20 backdrop-blur-sm text-center flex flex-col items-center gap-3 animate-in fade-in">
-                <div class="w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-400">
-                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                    <line x1="12" y1="9" x2="12" y2="13"/>
-                    <line x1="12" y1="17" x2="12.01" y2="17"/>
-                  </svg>
-                </div>
-                <div class="space-y-1">
-                  <h4 class="text-sm font-semibold text-rose-300">Mermaid Diagram Error</h4>
-                  <p class="text-xs text-gray-300 max-w-md">Failed to render diagram due to a syntax error in the definition.</p>
-                </div>
-                <div class="flex items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    class="btn-mermaid-inspect-error inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/35 hover:border-rose-500/60 transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
-                    data-error="${encodeURIComponent(errorMessage)}"
-                  >
-                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="16" x2="12" y2="12"></line>
-                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                    </svg>
-                    <span>View Error Details</span>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-mermaid-show-code inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 transition-all cursor-pointer"
-                  >
-                    <span>View Code</span>
-                  </button>
-                </div>
-              </div>
-            `;
-          }
-        });
-
-        await Promise.allSettled(renderTasks);
-      } catch (loadError) {
-        console.error("Failed to dynamically load Mermaid:", loadError);
-      }
-    }
-
-    renderMermaid();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [doc.html]);
-
-  // Initialize and persist checkbox states in localStorage
-  useEffect(() => {
-    const container = articleRef.current;
-    if (!container) return;
-
-    const checkboxes = container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
-    if (checkboxes.length === 0) return;
-
-    const storageKey = `doc-checks-${encodeURIComponent(doc.title)}`;
-    let savedChecks: Record<number, boolean> = {};
-    try {
-      savedChecks = JSON.parse(localStorage.getItem(storageKey) || "{}");
-    } catch {}
-
-    checkboxes.forEach((cb, idx) => {
-      cb.removeAttribute("disabled");
-      cb.classList.add("cursor-pointer", "accent-hub-green", "w-4", "h-4", "mr-2");
-      if (savedChecks[idx] !== undefined) {
-        cb.checked = savedChecks[idx];
-      }
-      cb.onchange = () => {
-        savedChecks[idx] = cb.checked;
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(savedChecks));
-        } catch {}
-      };
-    });
-  }, [doc.title, doc.html]);
-
-  // Master Collapse / Expand All toggle
+  // Master Collapse / Expand All toggle across all article sections, questions, and code blocks
   const toggleAll = useCallback(() => {
     const next = !allExpanded;
     setAllExpanded(next);
@@ -651,41 +297,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       const toggleSpan = blk.querySelector(".btn-toggle-code span");
       if (toggleSpan) toggleSpan.textContent = next ? "Collapse" : "Expand";
     });
-
-    // Sync TOC section expansion
-    const newCollapsedMap: Record<string, boolean> = {};
-    if (!next) {
-      tocGroups.forEach((g) => {
-        newCollapsedMap[g.id] = true;
-      });
-    }
-    setCollapsedTocSections(newCollapsedMap);
-  }, [allExpanded, tocGroups]);
-
-  // Toggle individual TOC section
-  const toggleTocSection = (groupId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCollapsedTocSections((prev) => ({
-      ...prev,
-      [groupId]: !prev[groupId],
-    }));
-  };
-
-  const copyNotionEmbed = () => {
-    if (typeof window === "undefined") return;
-    const url = new URL(window.location.href);
-    url.searchParams.set("embed", "true");
-    navigator.clipboard.writeText(url.toString());
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
-  };
-
-  const copyRawMarkdown = () => {
-    if (!doc.rawMarkdown) return;
-    navigator.clipboard.writeText(doc.rawMarkdown);
-    setCopiedRaw(true);
-    setTimeout(() => setCopiedRaw(false), 2000);
-  };
+  }, [allExpanded]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -764,197 +376,35 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
         errorInfo={mermaidErrorInfo}
       />
 
+      {/* Main Document Layout Grid (TOC Sidebar on left, Header & Article on right) */}
       <div className={`max-w-7xl mx-auto px-4 sm:px-8 py-8 ${isEmbed ? "!max-w-none !p-4" : ""}`}>
-        {/* Flex layout: Table of Contents on LEFT, Main Article on RIGHT */}
         <div className="flex flex-col lg:flex-row items-start gap-8">
-          {/* Sticky Table of Contents Sidebar - Left Side (300px fixed width, custom purple scrollbar) */}
+          {/* Left Column: Sticky Table of Contents Sidebar */}
           {!isEmbed && (
-            <aside className="toc-sidebar hidden lg:flex flex-col w-[300px] flex-shrink-0 sticky top-20 max-h-[calc(100vh-6rem)] bg-hub-card border border-hub-border rounded-2xl p-5 shadow-xl">
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-hub-border">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-hub-blue">
-                  <List className="w-4 h-4 text-hub-blue" />
-                  <span>Table of Contents</span>
-                </div>
-                <button
-                  onClick={toggleAll}
-                  title="Toggle All Sections"
-                  className="p-1 rounded hover:bg-white/5 text-hub-muted hover:text-hub-purple transition-colors"
-                >
-                  <ChevronsUpDown className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <nav className="toc-scroll-area overflow-y-auto flex-1 pr-1.5 flex flex-col gap-1.5 text-xs">
-                {tocGroups.map((group, gIdx) => {
-                  const isSectionActive = activeHeading === group.id;
-                  const isCollapsed = Boolean(collapsedTocSections[group.id]);
-                  const hasSubItems = group.subItems.length > 0;
-
-                  return (
-                    <div key={`toc-group-${group.id}-${gIdx}`} className="toc-group flex flex-col">
-                      {/* Section Heading Row */}
-                      <div className="flex items-center justify-between group rounded hover:bg-white/5 transition-colors">
-                        <a
-                          href={`#${group.id}`}
-                          onClick={(e) => handleTocClick(e, group.id)}
-                          className={`flex-1 py-1.5 px-2 rounded font-semibold transition-colors truncate ${
-                            isSectionActive ? "!text-hub-green font-bold" : "text-gray-200 hover:text-white"
-                          }`}
-                          title={group.text}
-                        >
-                          {group.text}
-                        </a>
-
-                        {hasSubItems && (
-                          <button
-                            type="button"
-                            onClick={(e) => toggleTocSection(group.id, e)}
-                            className="p-1.5 text-hub-muted hover:text-hub-purple transition-colors"
-                            title={isCollapsed ? "Expand section in outline" : "Collapse section in outline"}
-                          >
-                            <ChevronDown
-                              className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                                isCollapsed ? "-rotate-90 text-hub-muted" : "rotate-0 text-hub-purple"
-                              }`}
-                            />
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Nested Questions / Sub-items */}
-                      {hasSubItems && !isCollapsed && (
-                        <div className="pl-2 ml-2 border-l border-white/10 flex flex-col gap-0.5 my-1">
-                          {group.subItems.map((sub, sIdx) => {
-                            const isSubActive = activeHeading === sub.id;
-                            return (
-                              <a
-                                key={`toc-sub-${group.id}-${sub.id}-${sIdx}`}
-                                href={`#${sub.id}`}
-                                onClick={(e) => handleTocClick(e, sub.id)}
-                                className={`block py-1 px-2 rounded text-[11.5px] transition-colors truncate ${
-                                  isSubActive
-                                    ? "!text-hub-green font-bold bg-white/5"
-                                    : "text-gray-400 hover:text-white hover:bg-white/5"
-                                }`}
-                                title={sub.text}
-                              >
-                                {sub.text}
-                              </a>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </nav>
-
-              <div className="pt-3 mt-3 border-t border-hub-border flex items-center justify-between">
-                <button
-                  onClick={scrollToTop}
-                  className="flex items-center gap-1.5 text-xs text-hub-muted hover:text-white transition-colors"
-                >
-                  <ArrowUp className="w-3.5 h-3.5" />
-                  <span>Back to Top</span>
-                </button>
-                <span className="text-[10px] text-hub-muted font-mono">
-                  {doc.headings.length} headings
-                </span>
-              </div>
-            </aside>
+            <DocToc
+              headings={doc.headings}
+              activeHeading={activeHeading}
+              allExpanded={allExpanded}
+              onHeadingClick={handleTocClick}
+              onToggleAll={toggleAll}
+              onScrollToTop={scrollToTop}
+            />
           )}
 
-          {/* Main Content Area - Right Side */}
+          {/* Right Column: Title Card + Document Article */}
           <main className={`flex-1 min-w-0 ${isEmbed ? "w-full" : ""}`}>
-            {/* Header info card */}
-            <div className="bg-hub-card border border-hub-border rounded-2xl p-6 sm:p-8 mb-8 shadow-xl">
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-hub-secondary">
-                  <span className="text-hub-blue">{doc.category}</span>
-                  {doc.subfolder && (
-                    <>
-                      <ChevronRight className="w-3.5 h-3.5 text-hub-muted" />
-                      <span>{doc.subfolder}</span>
-                    </>
-                  )}
-                  <ChevronRight className="w-3.5 h-3.5 text-hub-muted" />
-                  <span className="text-white font-medium">{doc.title}</span>
-                </div>
+            <DocHeader
+              doc={doc}
+              isEmbed={isEmbed}
+              allExpanded={allExpanded}
+              onToggleAll={toggleAll}
+            />
 
-                {/* Header Action Buttons */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={toggleAll}
-                    title="Collapse / Expand All Sections, Questions & Code"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-hub-secondary hover:text-white border border-white/5 transition-all"
-                  >
-                    <ChevronsUpDown className="w-3.5 h-3.5 text-hub-purple" />
-                    <span>{allExpanded ? "Collapse All" : "Expand All"}</span>
-                  </button>
-
-                  <button
-                    onClick={copyRawMarkdown}
-                    title="Copy Raw Markdown Text"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-hub-secondary hover:text-white border border-white/5 transition-all"
-                  >
-                    {copiedRaw ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-hub-green" />
-                        <span>Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5 text-hub-blue" />
-                        <span>Copy Raw</span>
-                      </>
-                    )}
-                  </button>
-
-                  {!isEmbed && (
-                    <button
-                      onClick={copyNotionEmbed}
-                      title="Copy Notion Embed URL (?embed=true)"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-hub-green/10 text-xs font-medium text-hub-secondary hover:text-hub-green border border-white/5 hover:border-hub-green/30 transition-all"
-                    >
-                      {copiedLink ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-hub-green" />
-                          <span>Embed Copied!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Share2 className="w-3.5 h-3.5" />
-                          <span>Notion Embed</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-4">
-                {doc.title}
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-4 text-xs text-hub-muted font-mono">
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-hub-blue" />
-                  <span>{doc.readingTime}</span>
-                </div>
-                <span>•</span>
-                <div className="flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-hub-green" />
-                  <span>{doc.wordCount.toLocaleString()} words</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Rendered HTML with delegated interaction handling */}
-            <article
+            <DocArticle
               ref={articleRef}
-              onClick={handleArticleClick}
-              className="markdown-body bg-hub-card border border-hub-border rounded-2xl p-6 sm:p-10 shadow-xl"
-              dangerouslySetInnerHTML={{ __html: doc.html }}
+              html={doc.html}
+              title={doc.title}
+              onInspectMermaidError={setMermaidErrorInfo}
             />
           </main>
         </div>
