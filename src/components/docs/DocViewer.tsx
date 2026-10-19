@@ -377,8 +377,12 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       />
 
       {/* Main Document Layout Grid (TOC Sidebar on left, Header & Article on right) */}
-      <div className={`max-w-7xl mx-auto px-4 sm:px-8 py-8 ${isEmbed ? "!max-w-none !p-4" : ""}`}>
-        <div className="flex flex-col lg:flex-row items-start gap-8">
+      <div
+        className={`w-full px-4 sm:px-8 py-6 sm:py-8 ${
+          isEmbed ? "!p-4" : ""
+        }`}
+      >
+        <div className="flex flex-col lg:flex-row items-start gap-6 xl:gap-8">
           {/* Left Column: Sticky Table of Contents Sidebar */}
           {!isEmbed && (
             <DocToc

@@ -84,7 +84,7 @@ export const DocToc: React.FC<DocTocProps> = ({
   };
 
   return (
-    <aside className="toc-sidebar hidden lg:flex flex-col w-[300px] flex-shrink-0 sticky top-20 max-h-[calc(100vh-6rem)] bg-hub-card border border-hub-border rounded-2xl p-5 shadow-xl">
+    <aside className="toc-sidebar hidden lg:flex flex-col w-[280px] xl:w-[320px] flex-shrink-0 sticky top-20 max-h-[calc(100vh-6rem)] bg-hub-card border border-hub-border rounded-2xl p-5 shadow-xl">
       <div className="flex items-center justify-between pb-3 mb-3 border-b border-hub-border">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-hub-blue">
           <List className="w-4 h-4 text-hub-blue" />
