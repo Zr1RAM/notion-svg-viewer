@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { DocContent } from "@/lib/content";
+import { List } from "lucide-react";
 import { DocToc } from "./DocToc";
 import { DocHeader } from "./DocHeader";
 import { DocArticle } from "./DocArticle";
@@ -25,6 +26,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
   const [readingProgress, setReadingProgress] = useState(0);
   const [allExpanded, setAllExpanded] = useState(true);
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
+  const [isMobileTocOpen, setIsMobileTocOpen] = useState(false);
   const [mermaidErrorInfo, setMermaidErrorInfo] = useState<MermaidErrorInfo | null>(null);
   const { isOpen: isChatOpen } = useChat();
 
@@ -309,6 +311,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
   // Scroll to heading ensuring its parent section and question are uncollapsed
   const handleTocClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
+    setIsMobileTocOpen(false);
     const targetEl = document.getElementById(id);
     if (!targetEl) return;
     const container = articleRef.current;
@@ -354,7 +357,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
   };
 
   return (
-    <div className="w-full min-h-screen bg-hub-bg text-hub-primary relative">
+    <div className="w-full min-h-screen bg-hub-bg text-hub-primary relative overflow-x-clip">
       {/* Top Reading Progress Bar */}
       <div
         className="fixed top-0 left-0 h-0.5 bg-hub-green z-50 transition-all duration-150"
@@ -382,18 +385,20 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
       {/* Main Document Layout Grid (TOC Sidebar on left, Header & Article on right) */}
       <div
         className={cn(
-          "w-full px-4 sm:px-8 py-6 sm:py-8 transition-[padding] duration-300 ease-out",
+          "w-full max-w-full px-3 sm:px-8 py-4 sm:py-8 transition-[padding] duration-300 ease-out",
           isEmbed ? "!p-4" : "",
           isChatOpen && "lg:pr-[448px]"
         )}
       >
-        <div className="flex flex-col lg:flex-row items-start gap-6 xl:gap-8">
-          {/* Left Column: Sticky Table of Contents Sidebar */}
+        <div className="w-full max-w-full min-w-0 flex flex-col lg:flex-row items-start gap-6 xl:gap-8">
+          {/* Table of Contents: Sticky Sidebar on Desktop, Slide-out Drawer on Mobile */}
           {!isEmbed && (
             <DocToc
               headings={doc.headings}
               activeHeading={activeHeading}
               allExpanded={allExpanded}
+              isMobileOpen={isMobileTocOpen}
+              onCloseMobile={() => setIsMobileTocOpen(false)}
               onHeadingClick={handleTocClick}
               onToggleAll={toggleAll}
               onScrollToTop={scrollToTop}
@@ -401,7 +406,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
           )}
 
           {/* Right Column: Title Card + Document Article */}
-          <main className={`flex-1 min-w-0 ${isEmbed ? "w-full" : ""}`}>
+          <main className={`w-full max-w-full min-w-0 flex-1 ${isEmbed ? "w-full" : ""}`}>
             <DocHeader
               doc={doc}
               isEmbed={isEmbed}
@@ -418,6 +423,22 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
           </main>
         </div>
       </div>
+
+      {/* Mobile Floating Contents (TOC) Trigger Pill */}
+      {!isEmbed && (
+        <button
+          type="button"
+          onClick={() => setIsMobileTocOpen(true)}
+          title="Open Table of Contents"
+          className="lg:hidden fixed bottom-6 left-4 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#13161c]/95 border border-white/20 text-white text-xs font-semibold shadow-2xl backdrop-blur-xl hover:border-hub-green/50 active:scale-95 transition-all cursor-pointer"
+        >
+          <List className="w-4 h-4 text-hub-blue" />
+          <span>Contents</span>
+          <span className="text-[10px] text-hub-muted font-mono bg-white/10 px-1.5 py-0.5 rounded-full">
+            {doc.headings.length}
+          </span>
+        </button>
+      )}
     </div>
   );
 };

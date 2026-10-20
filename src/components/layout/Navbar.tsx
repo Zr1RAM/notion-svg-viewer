@@ -82,9 +82,9 @@ export const Navbar: React.FC<NavbarProps> = ({ categories = [] }) => {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#0f1117]/85 backdrop-blur-xl border-b border-[#272d3b] px-4 sm:px-8 py-2.5 flex items-center justify-between transition-all select-none">
+    <header className="sticky top-0 z-40 w-full bg-[#0f1117]/85 backdrop-blur-xl border-b border-[#272d3b] px-3 sm:px-8 py-2.5 flex items-center justify-between transition-all select-none max-w-full">
       {/* Left: Brand with Top-Level Category Dropdown + Breadcrumbs */}
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 overflow-hidden mr-2">
         {/* Brand / Home Dropdown (Cloud Architecture, Fast Track, Interview Prep) */}
         <div className="flex items-center gap-1 flex-shrink-0">
           <Link
@@ -104,7 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({ categories = [] }) => {
 
         {/* Breadcrumb Path Trail */}
         {!isHome && (
-          <div className="flex items-center gap-1.5 text-xs text-hub-secondary min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+          <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-hub-secondary min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
             <ChevronRight className="w-3.5 h-3.5 text-hub-muted flex-shrink-0" />
 
             {/* 1. Root Section (Docs / Diagrams / Guides) */}
@@ -119,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({ categories = [] }) => {
             {/* 2. Category Segment (e.g. Interview Prep) */}
             {currentCategory && (
               <>
-                <ChevronRight className="w-3 h-3 text-hub-muted flex-shrink-0 hidden sm:inline" />
+                <ChevronRight className="w-3 h-3 text-hub-muted flex-shrink-0 hidden md:inline" />
                 <Link
                   href={`/#${currentCategory.slug}`}
                   className="hover:text-white transition-colors truncate max-w-[140px] hidden md:inline"
@@ -132,31 +132,33 @@ export const Navbar: React.FC<NavbarProps> = ({ categories = [] }) => {
 
             {/* 3. Subfolder Segment with Dropdown (e.g. React & Node) */}
             {currentSubfolder && (
-              <>
+              <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
                 <ChevronRight className="w-3 h-3 text-hub-muted flex-shrink-0" />
                 <SubfolderDropdown
                   categoryName={currentCategory?.name}
                   currentSubfolder={currentSubfolder}
                   subfolders={currentSubfoldersList}
                 />
-              </>
+              </div>
             )}
 
             {/* 4. Active File Segment with Files Dropdown */}
-            <ChevronRight className="w-3 h-3 text-hub-muted flex-shrink-0" />
-            <FileDropdown
-              title={currentFileTitle}
-              files={currentFilesList}
-              folderName={currentSubfolder ? currentSubfolder.name : currentCategory?.name || "Folder"}
-            />
+            <div className="flex items-center gap-1 min-w-0">
+              <ChevronRight className="w-3 h-3 text-hub-muted flex-shrink-0 sm:inline" />
+              <FileDropdown
+                title={currentFileTitle}
+                files={currentFilesList}
+                folderName={currentSubfolder ? currentSubfolder.name : currentCategory?.name || "Folder"}
+              />
+            </div>
 
-            {/* Spotlight Search Trigger button next to file name */}
+            {/* Desktop Spotlight Search Trigger button next to file name */}
             {pathname.startsWith("/docs/") && (
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent("open-spotlight"))}
                 title="Search folder documents (Ctrl + P)"
-                className="ml-1 hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-hub-purple/15 hover:bg-hub-purple/25 text-xs font-semibold text-hub-purple hover:text-white border border-hub-purple/35 transition-all flex-shrink-0"
+                className="ml-1 hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-hub-purple/15 hover:bg-hub-purple/25 text-xs font-semibold text-hub-purple hover:text-white border border-hub-purple/35 transition-all flex-shrink-0 cursor-pointer"
               >
                 <Search className="w-3 h-3" />
                 <span>Search</span>
@@ -170,17 +172,29 @@ export const Navbar: React.FC<NavbarProps> = ({ categories = [] }) => {
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        {/* Mobile Search Button (1-tap access on phones) */}
+        {pathname.startsWith("/docs/") && (
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("open-spotlight"))}
+            title="Search folder documents"
+            className="sm:hidden p-1.5 rounded-lg bg-hub-purple/15 hover:bg-hub-purple/25 text-hub-purple hover:text-white border border-hub-purple/35 transition-all cursor-pointer"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+        )}
+
         {!isHome && (
           <button
             onClick={copyNotionEmbed}
             title="Copy Notion Embed link"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-hub-green/10 text-xs font-medium text-hub-secondary hover:text-hub-green border border-white/5 hover:border-hub-green/30 transition-all"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-white/5 hover:bg-hub-green/10 text-xs font-medium text-hub-secondary hover:text-hub-green border border-white/5 hover:border-hub-green/30 transition-all cursor-pointer"
           >
             {copied ? (
               <>
                 <Check className="w-3.5 h-3.5 text-hub-green" />
-                <span>Copied</span>
+                <span className="hidden sm:inline">Copied</span>
               </>
             ) : (
               <>

@@ -39,7 +39,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <Navbar categories={categories} />
           </Suspense>
-          <div className="flex-1 flex flex-col">{children}</div>
+          <div className="flex-1 flex flex-col min-w-0 max-w-full">{children}</div>
           <Suspense fallback={null}>
             <FloatingChatWidget />
           </Suspense>

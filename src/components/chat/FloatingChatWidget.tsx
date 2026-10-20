@@ -44,7 +44,7 @@ export const FloatingChatWidget: React.FC = () => {
 
   const isEmbed = mounted && searchParams?.get("embed") === "true";
 
-  // Calculate snapped Y position
+  // Calculate snapped Y position for dragging start
   const getSnappedY = useCallback(
     (c: Corner) => {
       if (c === "top") return TOP_OFFSET;
@@ -53,7 +53,13 @@ export const FloatingChatWidget: React.FC = () => {
     [windowHeight]
   );
 
-  const activeY = isDragging && dragY !== null ? dragY : getSnappedY(corner);
+  // Determine button positioning style
+  const buttonStyle: React.CSSProperties =
+    isDragging && dragY !== null
+      ? { top: `${dragY}px`, touchAction: "none" }
+      : corner === "top"
+        ? { top: `${TOP_OFFSET}px`, touchAction: "none" }
+        : { bottom: "24px", touchAction: "none" };
 
   // Pointer event handlers for vertical drag & corner snapping
   const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -123,20 +129,17 @@ export const FloatingChatWidget: React.FC = () => {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
-        style={{
-          top: `${activeY}px`,
-          right: "24px",
-          touchAction: "none",
-        }}
+        style={buttonStyle}
         title={isOpen ? "Close Chat" : "Open Chat (Drag to reposition)"}
         className={cn(
-          "fixed z-50 w-[52px] h-[52px] rounded-full flex items-center justify-center select-none shadow-2xl transition-transform",
+          "fixed z-50 right-4 sm:right-6 w-12 h-12 sm:w-[52px] sm:h-[52px] rounded-full flex items-center justify-center select-none shadow-2xl transition-transform",
           "bg-[#13161c]/95 border backdrop-blur-xl text-white",
           isDragging
             ? "cursor-grabbing scale-105 border-hub-green/80 shadow-[0_0_25px_rgba(0,255,136,0.35)]"
             : "cursor-grab hover:scale-105 hover:border-hub-green/50 hover:shadow-[0_0_20px_rgba(0,255,136,0.25)] border-white/15",
+          isOpen && "hidden sm:flex",
           isOpen && !isDragging && "border-hub-green/60 shadow-[0_0_20px_rgba(0,255,136,0.2)]",
-          !isDragging && "transition-[top,transform,border-color,box-shadow] duration-300 ease-out"
+          !isDragging && "transition-[top,bottom,transform,border-color,box-shadow] duration-300 ease-out"
         )}
       >
         {isOpen ? (

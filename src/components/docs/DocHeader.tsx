@@ -45,10 +45,10 @@ export const DocHeader: React.FC<DocHeaderProps> = ({
   };
 
   return (
-    <div className="bg-hub-card border border-hub-border rounded-2xl p-6 sm:p-8 mb-8 shadow-xl">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+    <div className="bg-hub-card border border-hub-border rounded-2xl p-4 sm:p-8 mb-6 sm:mb-8 shadow-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-4">
         {/* Breadcrumb Path */}
-        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-hub-secondary">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs font-semibold text-hub-secondary">
           <span className="text-hub-blue">{doc.category}</span>
           {doc.subfolder && (
             <>
@@ -61,11 +61,11 @@ export const DocHeader: React.FC<DocHeaderProps> = ({
         </div>
 
         {/* Header Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <button
             onClick={onToggleAll}
             title="Collapse / Expand All Sections, Questions & Code"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-hub-secondary hover:text-white border border-white/5 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-hub-secondary hover:text-white border border-white/5 transition-all cursor-pointer"
           >
             <ChevronsUpDown className="w-3.5 h-3.5 text-hub-purple" />
             <span>{allExpanded ? "Collapse All" : "Expand All"}</span>
@@ -74,7 +74,7 @@ export const DocHeader: React.FC<DocHeaderProps> = ({
           <button
             onClick={copyRawMarkdown}
             title="Copy Raw Markdown Text"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-hub-secondary hover:text-white border border-white/5 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-hub-secondary hover:text-white border border-white/5 transition-all cursor-pointer"
           >
             {copiedRaw ? (
               <>
@@ -93,7 +93,7 @@ export const DocHeader: React.FC<DocHeaderProps> = ({
             <button
               onClick={copyNotionEmbed}
               title="Copy Notion Embed URL (?embed=true)"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-hub-green/10 text-xs font-medium text-hub-secondary hover:text-hub-green border border-white/5 hover:border-hub-green/30 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-white/5 hover:bg-hub-green/10 text-xs font-medium text-hub-secondary hover:text-hub-green border border-white/5 hover:border-hub-green/30 transition-all cursor-pointer"
             >
               {copiedLink ? (
                 <>
@@ -111,7 +111,7 @@ export const DocHeader: React.FC<DocHeaderProps> = ({
         </div>
       </div>
 
-      <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-4">
+      <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight mb-4 break-words">
         {doc.title}
       </h1>
 

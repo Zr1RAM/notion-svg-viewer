@@ -323,7 +323,7 @@ export const DocArticle = React.forwardRef<HTMLElement, DocArticleProps>(
         ref={ref}
         onClick={handleArticleClick}
         className={cn(
-          "markdown-body bg-hub-card border border-hub-border rounded-2xl p-6 sm:p-10 shadow-xl",
+          "markdown-body bg-hub-card border border-hub-border rounded-2xl p-4 sm:p-10 shadow-xl w-full max-w-full min-w-0",
           className
         )}
         dangerouslySetInnerHTML={{ __html: html }}

@@ -47,6 +47,12 @@
   background: rgba(255, 255, 255, 0.25);
 }
 
+html,
+body {
+  overflow-x: clip;
+  max-width: 100vw;
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -63,10 +69,12 @@ body {
   left: 50%;
   transform: translateX(-50%);
   width: 700px;
+  max-width: 100vw;
   height: 380px;
   background: radial-gradient(circle, rgba(0, 255, 136, 0.08) 0%, rgba(56, 189, 248, 0.04) 45%, transparent 70%);
   pointer-events: none;
   z-index: 0;
+  overflow: hidden;
 }
 
 /* Node Hover and Interactive SVG Styling */
