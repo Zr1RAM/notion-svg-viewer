@@ -8,6 +8,8 @@ import { DocHeader } from "./DocHeader";
 import { DocArticle } from "./DocArticle";
 import { SpotlightModal } from "./SpotlightModal";
 import { MermaidErrorModal, MermaidErrorInfo } from "./MermaidErrorModal";
+import { useChat } from "@/components/chat";
+import { cn } from "@/lib/utils";
 
 interface DocViewerProps {
   doc: DocContent;
@@ -24,6 +26,7 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
   const [allExpanded, setAllExpanded] = useState(true);
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const [mermaidErrorInfo, setMermaidErrorInfo] = useState<MermaidErrorInfo | null>(null);
+  const { isOpen: isChatOpen } = useChat();
 
   const articleRef = useRef<HTMLElement>(null);
 
@@ -378,9 +381,11 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
 
       {/* Main Document Layout Grid (TOC Sidebar on left, Header & Article on right) */}
       <div
-        className={`w-full px-4 sm:px-8 py-6 sm:py-8 ${
-          isEmbed ? "!p-4" : ""
-        }`}
+        className={cn(
+          "w-full px-4 sm:px-8 py-6 sm:py-8 transition-[padding] duration-300 ease-out",
+          isEmbed ? "!p-4" : "",
+          isChatOpen && "lg:pr-[448px]"
+        )}
       >
         <div className="flex flex-col lg:flex-row items-start gap-6 xl:gap-8">
           {/* Left Column: Sticky Table of Contents Sidebar */}

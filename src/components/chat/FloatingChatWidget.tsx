@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { MessageSquare, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChatPanel, ChatCorner } from "./ChatPanel";
+import { useChat } from "./ChatContext";
 
 type Corner = ChatCorner;
 
@@ -15,7 +16,7 @@ const BTN_SIZE = 52; // 52px circle
 export const FloatingChatWidget: React.FC = () => {
   const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, setIsOpen } = useChat();
   const [corner, setCorner] = useState<Corner>("bottom");
   const [dragY, setDragY] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
