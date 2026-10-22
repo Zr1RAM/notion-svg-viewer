@@ -2,3 +2,5 @@ export { FloatingChatWidget } from "./FloatingChatWidget";
 export { ChatPanel } from "./ChatPanel";
 export type { ChatCorner } from "./ChatPanel";
 export { ChatProvider, useChat } from "./ChatContext";
+export { ChatSettingsView } from "./ChatSettingsView";
+export { ChatConversationView } from "./ChatConversationView";
