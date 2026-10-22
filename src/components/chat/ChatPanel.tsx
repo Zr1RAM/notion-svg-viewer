@@ -1,8 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, BotMessageSquare } from "lucide-react";
+import {
+  X,
+  BotMessageSquare,
+  Settings,
+  Trash2,
+  MessageSquare,
+  Sparkles,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useChat } from "./ChatContext";
+import { ChatSettingsView } from "./ChatSettingsView";
+import { ChatConversationView } from "./ChatConversationView";
+import { PROVIDERS } from "@/lib/ai";
 
 export type ChatCorner = "top" | "bottom";
 
@@ -11,7 +22,6 @@ interface ChatPanelProps {
   onClose: () => void;
   corner: ChatCorner;
   className?: string;
-  children?: React.ReactNode;
 }
 
 const TOP_OFFSET = 76;
@@ -23,9 +33,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   onClose,
   corner,
   className,
-  children,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const {
+    settings,
+    isSettingsOpen,
+    setIsSettingsOpen,
+    clearMessages,
+    messages,
+  } = useChat();
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
@@ -35,6 +51,9 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   }, []);
 
   if (!isOpen) return null;
+
+  const currentProvider = PROVIDERS.find((p) => p.id === settings?.provider);
+  const isConfigured = Boolean(settings?.apiKey);
 
   return (
     <>
@@ -65,42 +84,99 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         className={cn(
           "fixed z-50 flex flex-col overflow-hidden select-none",
           isMobile
-            ? "inset-x-0 bottom-0 h-[50vh] max-h-[55vh] rounded-t-2xl border-t border-white/15 bg-[#13161c]/98 backdrop-blur-2xl shadow-2xl animate-in slide-in-from-bottom duration-300"
-            : "w-[360px] sm:w-[400px] max-w-[calc(100vw-32px)] bg-[#13161c]/95 border border-white/15 rounded-2xl shadow-2xl backdrop-blur-2xl animate-in fade-in-0 zoom-in-95 duration-200",
+            ? "inset-x-0 bottom-0 h-[52vh] max-h-[58vh] rounded-t-2xl border-t border-white/15 bg-[#13161c]/98 backdrop-blur-2xl shadow-2xl animate-in slide-in-from-bottom duration-300"
+            : "w-[380px] sm:w-[420px] max-w-[calc(100vw-32px)] bg-[#13161c]/95 border border-white/15 rounded-2xl shadow-2xl backdrop-blur-2xl animate-in fade-in-0 zoom-in-95 duration-200",
           className
         )}
       >
         {/* Mobile Pull Handle */}
-        <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mt-2.5 mb-1 sm:hidden flex-shrink-0" />
+        <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mt-2 mb-1 sm:hidden flex-shrink-0" />
 
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/[0.02]">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-hub-green/10 border border-hub-green/30 flex items-center justify-center text-hub-green">
+        <div className="flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 border-b border-white/10 bg-white/[0.02] flex-shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-hub-green/10 border border-hub-green/30 flex items-center justify-center text-hub-green shrink-0">
               <BotMessageSquare className="w-3.5 h-3.5" />
             </div>
-            <div>
-              <h3 className="text-xs font-semibold text-white tracking-wide">Any doubts?</h3>
-              <p className="text-[10px] text-hub-muted flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-hub-green" />
-                Ready
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold text-white tracking-wide truncate">
+                  AI Architect
+                </h3>
+                {isConfigured && (
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-hub-green/15 text-hub-green border border-hub-green/30 shrink-0">
+                    {currentProvider?.name.replace(/Google |Anthropic /, "") || "Active"}
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-hub-muted flex items-center gap-1.5 truncate">
+                <span
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full shrink-0",
+                    isConfigured ? "bg-hub-green animate-pulse" : "bg-amber-400"
+                  )}
+                />
+                <span className="truncate">
+                  {isConfigured ? settings?.model || "Ready" : "API key required"}
+                </span>
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-md text-hub-muted hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
-            title="Close chat"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          {/* Header Action Buttons */}
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Toggle Settings / Back to Chat button */}
+            {isConfigured && (
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors cursor-pointer",
+                  isSettingsOpen
+                    ? "text-hub-green bg-white/[0.08]"
+                    : "text-hub-muted hover:text-white hover:bg-white/[0.08]"
+                )}
+                title={isSettingsOpen ? "Back to Chat" : "AI Provider Settings"}
+              >
+                {isSettingsOpen ? (
+                  <MessageSquare className="w-3.5 h-3.5" />
+                ) : (
+                  <Settings className="w-3.5 h-3.5" />
+                )}
+              </button>
+            )}
+
+            {/* Clear Chat History button (visible in chat view when messages exist) */}
+            {!isSettingsOpen && messages.length > 0 && (
+              <button
+                type="button"
+                onClick={clearMessages}
+                className="p-1.5 rounded-md text-hub-muted hover:text-red-400 hover:bg-white/[0.08] transition-colors cursor-pointer"
+                title="Clear chat history"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            {/* Close Chat Panel */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-md text-hub-muted hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+              title="Close chat"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Body: Empty for now as requested */}
-        <div className="flex-1 p-4 flex flex-col items-center justify-center text-center text-hub-muted">
-          {children}
+        {/* Dynamic Body: Settings Form vs. Active Conversation */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {isSettingsOpen || !isConfigured ? (
+            <ChatSettingsView />
+          ) : (
+            <ChatConversationView />
+          )}
         </div>
       </aside>
     </>

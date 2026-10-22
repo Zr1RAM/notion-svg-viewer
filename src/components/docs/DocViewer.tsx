@@ -28,9 +28,19 @@ export const DocViewer: React.FC<DocViewerProps> = ({ doc, embedMode = false }) 
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const [isMobileTocOpen, setIsMobileTocOpen] = useState(false);
   const [mermaidErrorInfo, setMermaidErrorInfo] = useState<MermaidErrorInfo | null>(null);
-  const { isOpen: isChatOpen } = useChat();
+  const { isOpen: isChatOpen, setDocContext } = useChat();
 
   const articleRef = useRef<HTMLElement>(null);
+
+  // Sync active document metadata into AI chat context for grounded answers
+  useEffect(() => {
+    setDocContext({
+      title: doc.title,
+      category: doc.category,
+      subfolder: doc.subfolder,
+    });
+    return () => setDocContext(undefined);
+  }, [doc.title, doc.category, doc.subfolder, setDocContext]);
 
   // Global Ctrl+P / Cmd+P hotkey & custom event listener to open scoped Spotlight Search
   useEffect(() => {
