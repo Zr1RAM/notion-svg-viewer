@@ -83,3 +83,83 @@ export async function callGemini(
 
   return replyText;
 }
+
+export interface GeminiModelOption {
+  id: string;
+  displayName: string;
+  description?: string;
+}
+
+/**
+ * Fetch available models dynamically from Google's Generative Language API using the provided API key.
+ * Only returns models that support generateContent.
+ */
+export async function fetchGeminiModels(apiKey: string): Promise<GeminiModelOption[]> {
+  const cleanKey = apiKey.trim();
+  if (!cleanKey) {
+    throw new Error("API key is required to fetch available models.");
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(
+    cleanKey
+  )}`;
+
+  let res: Response;
+  try {
+    res = await fetch(url);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Network error connecting to Google Models API: ${msg}`);
+  }
+
+  const data = await res.json();
+  if (!res.ok) {
+    const errorMsg = data?.error?.message || `HTTP ${res.status}`;
+    if (res.status === 400 && errorMsg.toLowerCase().includes("key")) {
+      throw new Error("Invalid API Key. Please verify your Gemini API key.");
+    }
+    throw new Error(`Google API Error: ${errorMsg}`);
+  }
+
+  const rawModels: Array<{
+    name?: string;
+    displayName?: string;
+    description?: string;
+    supportedGenerationMethods?: string[];
+  }> = data?.models || [];
+
+  const chatModels: GeminiModelOption[] = rawModels
+    .filter((m) => m.supportedGenerationMethods?.includes("generateContent"))
+    .map((m) => {
+      const id = (m.name || "").replace(/^models\//, "");
+      return {
+        id,
+        displayName: m.displayName || id,
+        description: m.description,
+      };
+    })
+    .filter((m) => m.id.length > 0);
+
+  if (chatModels.length === 0) {
+    throw new Error("No chat-compatible models returned by Google for this key.");
+  }
+
+  // Sort with latest & recommended models at the top
+  chatModels.sort((a, b) => {
+    const getScore = (id: string) => {
+      if (id.startsWith("gemini-2.5-flash")) return 110;
+      if (id.startsWith("gemini-2.5-pro")) return 105;
+      if (id.startsWith("gemini-2.0-flash")) return 100;
+      if (id.startsWith("gemini-2.0-pro")) return 95;
+      if (id.startsWith("gemini-1.5-flash")) return 80;
+      if (id.startsWith("gemini-1.5-pro")) return 75;
+      if (id.includes("flash")) return 60;
+      if (id.includes("pro")) return 50;
+      return 10;
+    };
+    return getScore(b.id) - getScore(a.id);
+  });
+
+  return chatModels;
+}
+

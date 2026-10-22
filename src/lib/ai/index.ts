@@ -7,6 +7,8 @@ import { callKimi } from "./providers/kimi";
 
 export * from "./types";
 export * from "./prompts";
+export { fetchGeminiModels } from "./providers/gemini";
+export type { GeminiModelOption } from "./providers/gemini";
 
 export const AI_SETTINGS_STORAGE_KEY = "hub_ai_settings";
 

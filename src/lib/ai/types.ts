@@ -33,8 +33,14 @@ export const PROVIDERS: ProviderInfo[] = [
     id: "gemini",
     name: "Google Gemini",
     badge: "Active",
-    defaultModel: "gemini-2.0-flash",
-    supportedModels: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
+    defaultModel: "gemini-2.5-flash",
+    supportedModels: [
+      "gemini-2.5-flash",
+      "gemini-2.5-pro",
+      "gemini-2.0-flash",
+      "gemini-1.5-flash",
+      "gemini-1.5-pro",
+    ],
     placeholderKey: "AIzaSy...",
     keyHelpUrl: "https://aistudio.google.com/app/apikey",
     keyHelpText: "Get free Gemini API key at Google AI Studio",
@@ -90,5 +96,5 @@ export const PROVIDERS: ProviderInfo[] = [
 export const DEFAULT_AI_SETTINGS: AISettings = {
   provider: "gemini",
   apiKey: "",
-  model: "gemini-2.0-flash",
+  model: "gemini-2.5-flash",
 };
