@@ -8,12 +8,14 @@ import {
   Trash2,
   MessageSquare,
   Sparkles,
+  Copy,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChat } from "./ChatContext";
 import { ChatSettingsView } from "./ChatSettingsView";
 import { ChatConversationView } from "./ChatConversationView";
-import { PROVIDERS } from "@/lib/ai";
+import { PROVIDERS, copyConversation } from "@/lib/ai";
 
 export type ChatCorner = "top" | "bottom";
 
@@ -35,12 +37,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   className,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [copiedAll, setCopiedAll] = useState(false);
+
   const {
     settings,
     isSettingsOpen,
     setIsSettingsOpen,
     clearMessages,
     messages,
+    docContext,
   } = useChat();
 
   useEffect(() => {
@@ -49,6 +54,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  const handleCopyAll = async () => {
+    if (messages.length === 0) return;
+    await copyConversation(messages, docContext?.title);
+    setCopiedAll(true);
+    setTimeout(() => setCopiedAll(false), 2000);
+  };
 
   if (!isOpen) return null;
 
@@ -142,6 +154,31 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                   <MessageSquare className="w-3.5 h-3.5" />
                 ) : (
                   <Settings className="w-3.5 h-3.5" />
+                )}
+              </button>
+            )}
+
+            {/* Copy Entire Conversation button */}
+            {!isSettingsOpen && messages.length > 0 && (
+              <button
+                type="button"
+                onClick={handleCopyAll}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors cursor-pointer",
+                  copiedAll
+                    ? "text-hub-green bg-hub-green/10"
+                    : "text-hub-muted hover:text-white hover:bg-white/[0.08]"
+                )}
+                title={
+                  copiedAll
+                    ? "Copied & downloaded .md file!"
+                    : "Copy entire conversation (downloads .md)"
+                }
+              >
+                {copiedAll ? (
+                  <Check className="w-3.5 h-3.5 text-hub-green" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
                 )}
               </button>
             )}

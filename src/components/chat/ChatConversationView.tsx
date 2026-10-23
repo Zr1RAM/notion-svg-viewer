@@ -129,32 +129,40 @@ export const ChatConversationView: React.FC = () => {
                     : "bg-[#111318] text-hub-primary border border-white/10 rounded-tl-none shadow-lg"
                 }`}
               >
-                {/* Copy Button for Assistant responses */}
-                {!isUser && (
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(msg.content, msg.id)}
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded bg-white/10 hover:bg-white/20 text-hub-muted hover:text-white transition-opacity cursor-pointer"
-                    title="Copy message"
-                  >
-                    {copiedId === msg.id ? (
-                      <Check className="w-3 h-3 text-hub-green" />
-                    ) : (
-                      <Copy className="w-3 h-3" />
-                    )}
-                  </button>
-                )}
-
                 {/* Markdown content rendering */}
                 {isUser ? (
                   <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                 ) : (
-                  <div
-                    className="prose-chat text-xs space-y-1.5 break-words font-sans"
-                    dangerouslySetInnerHTML={{
-                      __html: marked.parse(msg.content, { async: false }) as string,
-                    }}
-                  />
+                  <>
+                    <div
+                      className="prose-chat text-xs space-y-1.5 break-words font-sans"
+                      dangerouslySetInnerHTML={{
+                        __html: marked.parse(msg.content, { async: false }) as string,
+                      }}
+                    />
+
+                    {/* Response Actions */}
+                    <div className="flex items-center justify-end mt-2 pt-1.5 border-t border-white/5">
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(msg.content, msg.id)}
+                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] text-hub-muted hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                        title="Copy AI response"
+                      >
+                        {copiedId === msg.id ? (
+                          <>
+                            <Check className="w-3 h-3 text-hub-green" />
+                            <span className="text-hub-green font-medium">Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
