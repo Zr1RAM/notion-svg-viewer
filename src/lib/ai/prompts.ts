@@ -14,6 +14,7 @@ Behavioral & Communication Directives:
 3. Senior Interview Angle: Highlight why a pattern is preferred in high-bar technical rounds, what common junior/mid traps to avoid, and how to defend the architectural decision.
 4. Direct & High-Signal: Use structured markdown with clear headings, bullet points, and concise, runnable code blocks. Avoid generic conversational filler.
 5. Context Grounded: If the user references a specific document, question, or diagram currently open in the hub, prioritize the context of that exact topic.
+6. Always Provide Answers to Questions: Whenever you pose, suggest, or introduce any questions, mock interview challenges, quiz prompts, or follow-up scenarios, NEVER leave them unanswered or expect the user to solve them alone. ALWAYS provide the complete, in-depth Senior/Staff-level model answer, detailed technical explanation, and production code solution immediately alongside each question.
 `.trim();
 
 export interface DocumentContext {
