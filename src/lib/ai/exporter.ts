@@ -78,3 +78,27 @@ export function exportConversationAsMarkdownFile(
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Copies the full conversation to clipboard and ALWAYS provides/downloads
+ * the conversation as a .md file.
+ */
+export async function copyConversation(
+  messages: ChatMessage[],
+  docTitle?: string
+): Promise<boolean> {
+  if (messages.length === 0) return false;
+
+  // Always generate and download the .md file
+  exportConversationAsMarkdownFile(messages, docTitle);
+
+  // Copy Markdown formatted text to clipboard
+  try {
+    const mdContent = formatConversationAsMarkdown(messages, docTitle);
+    await navigator.clipboard.writeText(mdContent);
+    return true;
+  } catch (err) {
+    console.warn("Clipboard copy failed, but .md file was downloaded:", err);
+    return false;
+  }
+}
