@@ -7,6 +7,7 @@ import { callKimi } from "./providers/kimi";
 
 export * from "./types";
 export * from "./prompts";
+export * from "./exporter";
 export { fetchGeminiModels } from "./providers/gemini";
 export type { GeminiModelOption } from "./providers/gemini";
 
